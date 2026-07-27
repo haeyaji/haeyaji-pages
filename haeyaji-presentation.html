@@ -85,6 +85,19 @@ h2.st{font-size:clamp(30px,3.6vw,41px);font-weight:850;letter-spacing:-.03em;mar
 .card .ch{font-weight:850;font-size:17px;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
 .card .cd{font-size:15.4px;color:var(--ink2);margin-top:9px;line-height:1.55}
 .card .cd b{color:var(--ink);font-weight:800}
+.steps{margin:14px 0 0;padding:0;list-style:none}
+.steps li{display:flex;gap:11px;padding:8px 0;border-bottom:1px solid var(--line2);font-size:14.4px;color:var(--ink2);line-height:1.45}
+.steps li:last-child{border-bottom:0}
+.steps .no{font-family:var(--mono);font-size:12.5px;font-weight:800;color:var(--green);min-width:16px;padding-top:2px}
+.steps b{color:var(--ink);font-weight:800}
+.shot{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;box-shadow:0 6px 20px rgba(20,23,26,.07);overflow:hidden}
+.shot img{display:block;width:100%;height:296px;object-fit:cover;object-position:50% 34%;border-radius:8px}
+.shotcap{font-family:var(--mono);font-size:12.5px;color:var(--faint);margin-top:8px;text-align:center}
+.toolhead{font-family:var(--mono);font-size:12.5px;font-weight:800;letter-spacing:.04em;color:var(--ink3);margin:0 0 10px;padding-bottom:8px;border-bottom:1px solid var(--line2)}
+.tool{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 14px;box-shadow:0 3px 12px rgba(20,23,26,.05)}
+.tool svg{width:25px;height:25px;flex-shrink:0;display:block}
+.tool .tn{font-size:15px;font-weight:850;letter-spacing:-.01em}
+.tool .td{font-size:13.2px;color:var(--ink2);margin-top:3px;line-height:1.45}
 .gcard{background:var(--card);border:1px solid var(--line);border-left-width:3px;border-radius:11px;padding:11px 14px}
 .gcard .gt{font-size:14.5px;font-weight:850;letter-spacing:-.01em}
 .gcard .gl{font-family:var(--mono);font-size:11.6px;color:var(--ink3);margin-top:5px;line-height:1.45}
@@ -164,7 +177,7 @@ svg .m{font-family:var(--mono)}
 
 /* metric row */
 .mrow{display:flex;flex-wrap:wrap;gap:11px}
-.mrow .m{flex:1;min-width:114px;background:var(--card2);border:1px solid var(--line2);border-radius:11px;padding:13px 13px;text-align:center}
+.mrow .m{flex:1;min-width:114px;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:14px 13px;text-align:center;box-shadow:0 3px 12px rgba(20,23,26,.05)}
 .mrow .m .mv{font-family:var(--mono);font-size:20px;font-weight:900;color:var(--green);letter-spacing:-.02em}
 .mrow .m .ml{font-size:12.4px;color:var(--ink3);margin-top:4px;font-weight:600}
 
@@ -212,6 +225,12 @@ svg .m{font-family:var(--mono)}
     <path d="M19.3 23.9 23 27.1 28.7 20.2" fill="none" stroke="url(#lgrad)"
           stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
   </symbol>
+  <symbol id="t-notion" viewBox="0 0 24 24"><path fill="#191A1A" d="M4.459 4.208c.746.606 1.026.56 2.428.466l13.215-.793c.28 0 .047-.28-.046-.326L17.86 1.968c-.42-.326-.981-.7-2.055-.607L3.01 2.295c-.466.046-.56.28-.374.466zm.793 3.08v13.904c0 .747.373 1.027 1.214.98l14.523-.84c.841-.046.935-.56.935-1.167V6.354c0-.606-.233-.933-.748-.887l-15.177.887c-.56.047-.747.327-.747.933zm14.337.745c.093.42 0 .84-.42.888l-.7.14v10.264c-.608.327-1.168.514-1.635.514-.748 0-.935-.234-1.495-.933l-4.577-7.186v6.952L12.21 19s0 .84-1.168.84l-3.222.186c-.093-.186 0-.653.327-.746l.84-.233V9.854L7.822 9.76c-.094-.42.14-1.026.793-1.073l3.456-.233 4.764 7.279v-6.44l-1.215-.139c-.093-.514.28-.887.747-.933zM1.936 1.035l13.31-.98c1.634-.14 2.055-.047 3.082.7l4.249 2.986c.7.513.934.653.934 1.213v16.378c0 1.026-.373 1.634-1.68 1.726l-15.458.934c-.98.047-1.448-.093-1.962-.747l-3.129-4.06c-.56-.747-.793-1.306-.793-1.96V2.667c0-.839.374-1.54 1.447-1.632z"/></symbol>
+  <!-- Slack — 공식 SVG 미제공, 4색 핀휠 마크를 도형으로 재현 -->
+  <symbol id="t-slack" viewBox="0 0 24 24"><rect x="3.2" y="2.2" width="5.6" height="10" rx="2.8" fill="#36C5F0"/><rect x="11.8" y="3.2" width="10" height="5.6" rx="2.8" fill="#2EB67D"/><rect x="15.2" y="11.8" width="5.6" height="10" rx="2.8" fill="#ECB22E"/><rect x="2.2" y="15.2" width="10" height="5.6" rx="2.8" fill="#E01E5A"/></symbol>
+  <!-- dbdiagram — 브랜드 컬러는 ERD 워터마크에서 추출 -->
+  <symbol id="t-gh" viewBox="0 0 24 24"><path fill="#24292F" d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></symbol>
+  <symbol id="t-dbd" viewBox="0 0 24 24"><rect width="24" height="24" rx="5.5" fill="#2060CF"/><g fill="#fff"><rect x="4.4" y="5" width="7" height="5.2" rx="1.3"/><rect x="12.8" y="13.6" width="7" height="5.2" rx="1.3"/></g><path d="M7.9 10.4v3.6h8.4v-.6" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/></symbol>
 </defs></svg>
 <div class="progress" id="prog"></div>
 <div class="deck" id="deck">
@@ -241,18 +260,19 @@ svg .m{font-family:var(--mono)}
       <div class="two">
         <nav class="toc">
           <a data-r style="--i:2" data-go="team"><span class="n">01</span><span class="t">팀 소개</span></a>
-          <a data-r style="--i:3" data-go="bg"><span class="n">02</span><span class="t">문제 정의</span></a>
-          <a data-r style="--i:4" data-go="diff"><span class="n">03</span><span class="t">해결 방식</span></a>
-          <a data-r style="--i:5" data-go="feat"><span class="n">04</span><span class="t">기능 구조</span></a>
-          <a data-r style="--i:6" data-go="ia"><span class="n">05</span><span class="t">서비스 설계</span></a>
-          <a data-r style="--i:7" data-go="arch"><span class="n">06</span><span class="t">시스템 설계</span></a>
-          <a data-r style="--i:8" data-go="nlp"><span class="n">07</span><span class="t">핵심 엔진</span></a>
-          <a data-r style="--i:9" data-go="challenge"><span class="n">08</span><span class="t">기술적 챌린지</span></a>
-          <a data-r style="--i:10" data-go="auth-sec"><span class="n">09</span><span class="t">인증 · 보안</span></a>
-          <a data-r style="--i:11" data-go="impl1"><span class="n">10</span><span class="t">구현 결과 · 시연</span></a>
-          <a data-r style="--i:12" data-go="trouble"><span class="n">11</span><span class="t">트러블슈팅</span></a>
-          <a data-r style="--i:13" data-go="retro"><span class="n">12</span><span class="t">회고</span></a>
-          <a data-r style="--i:14" data-go="qa"><span class="n">13</span><span class="t">Q&amp;A</span></a>
+          <a data-r style="--i:3" data-go="collab"><span class="n">02</span><span class="t">협업 방식</span></a>
+          <a data-r style="--i:4" data-go="bg"><span class="n">03</span><span class="t">문제 정의</span></a>
+          <a data-r style="--i:5" data-go="diff"><span class="n">04</span><span class="t">해결 방식</span></a>
+          <a data-r style="--i:6" data-go="req"><span class="n">05</span><span class="t">요구사항 · 기능 구조</span></a>
+          <a data-r style="--i:7" data-go="ia"><span class="n">06</span><span class="t">서비스 설계</span></a>
+          <a data-r style="--i:8" data-go="arch"><span class="n">07</span><span class="t">시스템 설계</span></a>
+          <a data-r style="--i:9" data-go="nlp"><span class="n">08</span><span class="t">핵심 엔진</span></a>
+          <a data-r style="--i:10" data-go="challenge"><span class="n">09</span><span class="t">기술적 챌린지</span></a>
+          <a data-r style="--i:11" data-go="auth-sec"><span class="n">10</span><span class="t">인증 · 보안</span></a>
+          <a data-r style="--i:12" data-go="impl1"><span class="n">11</span><span class="t">구현 결과 · 시연</span></a>
+          <a data-r style="--i:13" data-go="trouble"><span class="n">12</span><span class="t">트러블슈팅</span></a>
+          <a data-r style="--i:14" data-go="retro"><span class="n">13</span><span class="t">회고</span></a>
+          <a data-r style="--i:15" data-go="qa"><span class="n">14</span><span class="t">Q&amp;A</span></a>
         </nav>
         <div class="diagram tp" data-r style="--i:4">
           <svg viewBox="0 0 460 366" width="440">
@@ -306,7 +326,7 @@ svg .m{font-family:var(--mono)}
         <div class="pcard" data-r style="--i:3"><div class="av" style="background:#EDF4F1">🎨</div><div class="pn">허건</div><div class="pr">Frontend 전담<br>날씨 · 추천 · 개인화</div></div>
         <div class="pcard" data-r style="--i:4"><div class="av" style="background:#EFF3F8">✅</div><div class="pn">이호성</div><div class="pr">할 일 · 루틴 · 라벨</div></div>
         <div class="pcard" data-r style="--i:5"><div class="av" style="background:#F3F0F7">🔐</div><div class="pn">김현우</div><div class="pr">인증 · 회원 · 친구</div></div>
-        <div class="pcard" data-r style="--i:6"><div class="av" style="background:#F7F2E8">🗓️</div><div class="pn">유희준</div><div class="pr">약속 조율 · 설계</div></div>
+        <div class="pcard" data-r style="--i:6"><div class="av" style="background:#F7F2E8">🗓️</div><div class="pn">유희준</div><div class="pr">약속 조율<br>공통 컴포넌트 · 문서화</div></div>
       </div>
       <div class="diagram" data-r style="--i:7">
         <svg viewBox="0 0 1080 250">
@@ -336,10 +356,11 @@ svg .m{font-family:var(--mono)}
 
             <rect x="568" y="132" width="104" height="30" rx="9" fill="#F1F3F5" stroke="#D6DBE0"/><text x="620" y="152" fill="#4B535B">member</text>
             <rect x="684" y="132" width="104" height="30" rx="9" fill="#F1F3F5" stroke="#D6DBE0"/><text x="736" y="152" fill="#4B535B">friend</text>
-            <rect x="626" y="172" width="104" height="30" rx="9" fill="#F1F3F5" stroke="#D6DBE0"/><text x="678" y="192" fill="#4B535B">config</text>
+            <rect x="626" y="172" width="104" height="30" rx="9" fill="#F1F3F5" stroke="#D6DBE0"/><text x="678" y="192" fill="#4B535B">auth</text>
 
             <rect x="844" y="132" width="104" height="30" rx="9" fill="#F1F3F5" stroke="#D6DBE0"/><text x="896" y="152" fill="#4B535B">meeting</text>
-            <rect x="960" y="132" width="104" height="30" rx="9" fill="#F1F3F5" stroke="#D6DBE0"/><text x="1012" y="152" fill="#4B535B">설계</text>
+            <rect x="960" y="132" width="104" height="30" rx="9" fill="#F1F3F5" stroke="#D6DBE0"/><text x="1012" y="152" fill="#4B535B">common</text>
+            <rect x="902" y="172" width="104" height="30" rx="9" fill="#F1F3F5" stroke="#D6DBE0"/><text x="954" y="192" fill="#4B535B">문서화</text>
           </g>
 
           <rect x="16" y="212" width="1048" height="34" rx="11" fill="#16191E"/>
@@ -349,10 +370,63 @@ svg .m{font-family:var(--mono)}
     </div>
   </section>
 
+  <!-- 3.5 협업 방식 -->
+  <section class="slide" id="collab">
+    <div class="wrap">
+      <div class="secmark" data-r><span class="bn">02</span></div>
+      <div class="ey" data-r style="--i:1">Collaboration</div>
+      <h2 class="st" data-r style="--i:1">협업 방식 — 이슈에서 머지까지</h2>
+      <p class="lead" data-r style="--i:2">이슈 번호 하나를 브랜치와 커밋에 끝까지 달고 갔다. <b>코드에서 이슈까지 거꾸로 따라갈 수 있다.</b></p>
+      <div class="hr" data-r style="--i:2"></div>
+      <div class="two top">
+        <div>
+          <div class="diagram" data-r style="--i:2;padding:14px 16px">
+            <svg viewBox="0 0 520 200">
+              <defs><marker id="gm" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" refX="10" refY="5.5" orient="auto"><path d="M0,0 L11,5.5 L0,11z" fill="#C4CAD0"/></marker></defs>
+              <text x="244" y="34" font-size="13" font-weight="700" text-anchor="middle" fill="#767E86" class="m">feature/be-47</text>
+              <path d="M120,142 C144,142 150,62 174,62 H314 C338,62 344,142 368,142" fill="none" stroke="#C4CAD0" stroke-width="2.4"/>
+              <line x1="24" y1="142" x2="496" y2="142" stroke="#AEB5BC" stroke-width="3" marker-end="url(#gm)"/>
+              <g fill="#AEB5BC"><circle cx="60" cy="142" r="6"/><circle cx="120" cy="142" r="6"/><circle cx="368" cy="142" r="6"/><circle cx="440" cy="142" r="6"/></g>
+              <g fill="#15795A"><circle cx="174" cy="62" r="5.6"/><circle cx="244" cy="62" r="5.6"/><circle cx="314" cy="62" r="5.6"/></g>
+              <text x="24" y="174" font-size="13" font-weight="800" fill="#4B535B" class="m">main</text>
+              <g class="m" font-size="12" font-weight="700" fill="#A2A9B1" text-anchor="middle">
+                <text x="120" y="174">이슈 #47</text><text x="368" y="174">PR 머지</text>
+              </g>
+              <text x="496" y="194" font-size="10.5" font-weight="700" fill="#A2A9B1" text-anchor="end" class="m">main에 직접 푸시하지 않았다 · develop · release 브랜치는 두지 않았다</text>
+            </svg>
+          </div>
+          <ul class="steps" data-r style="--i:3">
+            <li><span class="no">01</span><span>작업 단위를 <b>이슈로 먼저 쪼갰다</b> — fe 15개 · be 31개</span></li>
+            <li><span class="no">02</span><span>브랜치 이름에 <b>번호를 넣었다</b> — feature/be-47 · fix/be-15</span></li>
+            <li><span class="no">03</span><span>커밋 메시지에도 번호를 달았다 — <b>[BE] feat : 할 일 공유 구현 #47</b></span></li>
+            <li><span class="no">04</span><span><b>PR로만 합쳤다.</b> 리뷰에서 나온 수정은 후속 커밋으로 남겼다</span></li>
+          </ul>
+          <div class="mrow" data-r style="--i:4;margin-top:14px">
+            <div class="m"><div class="mv">505</div><div class="ml">커밋</div></div>
+            <div class="m"><div class="mv">39</div><div class="ml">작업 브랜치</div></div>
+            <div class="m"><div class="mv">46</div><div class="ml">이슈</div></div>
+            <div class="m"><div class="mv">94<small>%</small></div><div class="ml">이슈 번호 포함</div></div>
+          </div>
+        </div>
+        <div>
+          <div class="toolhead" data-r style="--i:3">사용한 협업 툴</div>
+          <div class="tool" data-r style="--i:3"><svg viewBox="0 0 24 24"><use href="#t-gh"/></svg>
+            <div><div class="tn">GitHub</div><div class="td">이슈 · 브랜치 · PR — <b>번호 하나로 셋을 묶었다</b></div></div></div>
+          <div class="tool" data-r style="--i:4;margin-top:10px"><svg viewBox="0 0 24 24"><use href="#t-notion"/></svg>
+            <div><div class="tn">Notion</div><div class="td">요구사항 분석 — <b>도메인 코드 · 우선순위 · 상태</b></div></div></div>
+          <div class="tool" data-r style="--i:5;margin-top:10px"><svg viewBox="0 0 24 24"><use href="#t-slack"/></svg>
+            <div><div class="tn">Slack</div><div class="td">막힌 지점을 바로 묻고 <b>결정을 채널에 남겼다</b></div></div></div>
+          <div class="tool" data-r style="--i:6;margin-top:10px"><svg viewBox="0 0 24 24"><use href="#t-dbd"/></svg>
+            <div><div class="tn">dbdiagram</div><div class="td">ERD를 <b>코드로 적어</b> 변경 이력을 남겼다</div></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- 4. 문제 정의 -->
   <section class="slide" id="bg">
     <div class="wrap">
-      <div class="secmark" data-r><span class="bn">02</span></div>
+      <div class="secmark" data-r><span class="bn">03</span></div>
       <div class="ey" data-r style="--i:1">Problem</div>
       <h2 class="st" data-r style="--i:1">앱 4개를 오가며 5단계</h2>
       <p class="lead" data-r style="--i:2">“주말에 뭐 하지”를 정하는 데 실제로 필요한 동선.</p>
@@ -395,7 +469,7 @@ svg .m{font-family:var(--mono)}
   <!-- 5. 해결 방식 -->
   <section class="slide" id="diff">
     <div class="wrap">
-      <div class="secmark" data-r><span class="bn">03</span></div>
+      <div class="secmark" data-r><span class="bn">04</span></div>
       <div class="ey" data-r style="--i:1">Solution</div>
       <h2 class="st" data-r style="--i:1">다섯 단계를 앱 하나에</h2>
       <div class="hr" data-r style="--i:2"></div>
@@ -450,10 +524,87 @@ svg .m{font-family:var(--mono)}
     </div>
   </section>
 
-  <!-- 6. 기능 구조 -->
+  <!-- 6. 요구사항 도출 -->
+  <section class="slide" id="req">
+    <div class="wrap">
+      <div class="secmark" data-r><span class="bn">05</span></div>
+      <div class="ey" data-r style="--i:1">Requirements</div>
+      <h2 class="st" data-r style="--i:1">요구사항 분석 — 도메인 12개</h2>
+      <p class="lead" data-r style="--i:2">무엇을 만들지 정하기 전에 <b>필요한 것을 한 줄씩 적었다.</b></p>
+      <div class="hr" data-r style="--i:2"></div>
+      <div class="diagram" data-r style="--i:2">
+        <svg viewBox="0 0 1080 306">
+          <defs><marker id="rq" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" refX="13" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14z" fill="#C4CAD0"/></marker></defs>
+
+          <text x="16" y="26" font-size="12.5" font-weight="800" fill="#0B5540" class="m">① 합치기로 한 동선</text>
+          <rect x="16" y="38" width="230" height="252" rx="13" fill="#EDF4F1" stroke="#15795A" stroke-width="1.2"/>
+          <g font-size="13.5" font-weight="700" fill="#0B5540">
+            <text x="36" y="78">🌤️ 날씨 · 위치</text>
+            <text x="36" y="126">🤖 취향 추천</text>
+            <text x="36" y="174">🗺️ 실재 장소</text>
+            <text x="36" y="222">🗓️ 약속 조율</text>
+            <text x="36" y="270">✅ 할 일 등록</text>
+          </g>
+
+          <text x="290" y="26" font-size="12.5" font-weight="800" fill="#4B535B" class="m">② 요구사항 분석 — 도메인 12개</text>
+          <rect x="290" y="38" width="470" height="252" rx="13" fill="#F5F7F8" stroke="#D6DBE0"/>
+          <g class="m" font-size="12.5" font-weight="800" text-anchor="middle">
+            <rect x="302" y="54" width="145" height="34" rx="9" fill="#EDF4F1" stroke="#15795A"/><text x="374" y="76" fill="#0B5540">WTHR 날씨</text>
+            <rect x="456" y="54" width="145" height="34" rx="9" fill="#EDF4F1" stroke="#15795A"/><text x="528" y="76" fill="#0B5540">PLAC 장소</text>
+            <rect x="610" y="54" width="145" height="34" rx="9" fill="#EDF4F1" stroke="#15795A"/><text x="682" y="76" fill="#0B5540">RECO 추천</text>
+
+            <rect x="302" y="96" width="145" height="34" rx="9" fill="#EFF3F8" stroke="#2E6BA8"/><text x="374" y="118" fill="#1E4E7E">MEET 약속</text>
+            <rect x="456" y="96" width="145" height="34" rx="9" fill="#F7F2E8" stroke="#B4791F"/><text x="528" y="118" fill="#8A5A12">TODO 할 일</text>
+            <rect x="610" y="96" width="145" height="34" rx="9" fill="#F7F2E8" stroke="#B4791F"/><text x="682" y="118" fill="#8A5A12">ROUT 루틴</text>
+
+            <rect x="302" y="138" width="145" height="34" rx="9" fill="#F3F0F7" stroke="#6B4C8A"/><text x="374" y="160" fill="#553C72">AUTH 인증</text>
+            <rect x="456" y="138" width="145" height="34" rx="9" fill="#F3F0F7" stroke="#6B4C8A"/><text x="528" y="160" fill="#553C72">PERM 권한</text>
+            <rect x="610" y="138" width="145" height="34" rx="9" fill="#F3F0F7" stroke="#6B4C8A"/><text x="682" y="160" fill="#553C72">PROF 개인화</text>
+
+            <rect x="302" y="180" width="145" height="34" rx="9" fill="#F3F0F7" stroke="#6B4C8A"/><text x="374" y="202" fill="#553C72">SHARE 공유</text>
+            <rect x="456" y="180" width="145" height="34" rx="9" fill="#EAF3F3" stroke="#2F7D80"/><text x="528" y="202" fill="#1E5F62">NOTI 알림</text>
+            <rect x="610" y="180" width="145" height="34" rx="9" fill="#F1F3F5" stroke="#D6DBE0"/><text x="682" y="202" fill="#4B535B">COMM 공통</text>
+          </g>
+          <rect x="302" y="230" width="446" height="46" rx="10" fill="#16191E"/>
+          <text x="525" y="248" text-anchor="middle" font-size="12" font-weight="800" fill="#8FD8BA" class="m">항목마다 우선순위와 상태를 붙였다</text>
+          <text x="525" y="266" text-anchor="middle" font-size="11.5" font-weight="700" fill="#9db6ab" class="m">우선순위 높음 · 중간 · 낮음 — 상태 완료 · 예정</text>
+
+          <text x="804" y="26" font-size="12.5" font-weight="800" fill="#4B535B" class="m">③ 기능군 5개</text>
+          <g font-size="14" font-weight="850">
+            <rect x="804" y="38" width="260" height="44" rx="11" fill="#EDF4F1" stroke="#15795A" stroke-width="1.2"/><text x="824" y="66" fill="#0B5540">1 · 날씨 기반 활동 추천</text>
+            <rect x="804" y="90" width="260" height="44" rx="11" fill="#EFF3F8" stroke="#2E6BA8" stroke-width="1.2"/><text x="824" y="118" fill="#1E4E7E">2 · 약속 조율</text>
+            <rect x="804" y="142" width="260" height="44" rx="11" fill="#F7F2E8" stroke="#B4791F" stroke-width="1.2"/><text x="824" y="170" fill="#8A5A12">3 · 할 일 · 루틴</text>
+            <rect x="804" y="194" width="260" height="44" rx="11" fill="#F3F0F7" stroke="#6B4C8A" stroke-width="1.2"/><text x="824" y="222" fill="#553C72">4 · 인증 · 권한 · 개인화</text>
+            <rect x="804" y="246" width="260" height="44" rx="11" fill="#EAF3F3" stroke="#2F7D80" stroke-width="1.2" stroke-dasharray="6 4"/><text x="824" y="274" fill="#1E5F62">5 · 알림</text>
+          </g>
+
+          <g stroke="#C4CAD0" stroke-width="2.5" fill="none" marker-end="url(#rq)">
+            <path d="M250,164 L282,164"/><path d="M764,164 L796,164"/>
+          </g>
+        </svg>
+      </div>
+      <div class="two top" style="margin-top:18px">
+        <div>
+          <ul class="steps" data-r style="--i:3;margin-top:0">
+            <li><span class="no">01</span><span>화면이 아니라 <b>동작으로 적었다</b> — WTHR-1 “선택 날짜의 날씨(상태 · 최고/최저 기온)를 제공한다”</span></li>
+            <li><span class="no">02</span><span>필요하면 <b>필드 이름까지 문장에 넣었다</b> — NOTI-5 “이동할 참조 정보를 포함한다 (ref_id · link_token)”</span></li>
+            <li><span class="no">03</span><span>우선순위 <b>‘높음’은 전부 ‘완료’</b>, 중간과 낮음은 전부 ‘예정’이었다</span></li>
+            <li><span class="no">04</span><span>미결정 8건은 요구사항과 <b>따로 적어뒀다</b> — DB 도입과 인증 스택은 블로커로 표시했다</span></li>
+          </ul>
+        </div>
+        <div>
+          <div class="shot" data-r style="--i:3">
+            <img src="노션요구사항관리.png" alt="노션 요구사항 관리 보드" style="height:144px;object-position:50% 30%" onclick="window.open(this.src)">
+            <div class="shotcap">Notion · 요구사항 분석</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. 기능 구조 -->
   <section class="slide" id="feat">
     <div class="wrap">
-      <div class="secmark" data-r><span class="bn">04</span></div>
       <div class="ey" data-r style="--i:1">Feature Map</div>
       <h2 class="st" data-r style="--i:1">5개 기능군</h2>
       <div class="hr" data-r style="--i:2"></div>
@@ -495,13 +646,13 @@ svg .m{font-family:var(--mono)}
             <rect x="876" y="260" width="172" height="32" rx="9" fill="#fff"/><text x="962" y="281" fill="#553C72">취향 학습</text>
           </g>
 
-          <rect x="16" y="320" width="1048" height="64" rx="13" fill="#F5F7F8" stroke="#C4CAD0" stroke-width="2"/>
-          <text x="40" y="359" font-size="17" font-weight="900" fill="#4B535B">5 · 알림</text>
+          <rect x="16" y="320" width="1048" height="64" rx="13" fill="#EAF3F3" stroke="#2F7D80" stroke-width="1.2"/>
+          <text x="40" y="359" font-size="17" font-weight="900" fill="#1E5F62">5 · 알림</text>
           <g font-size="13.5" font-weight="700" class="m" text-anchor="middle">
-            <rect x="312" y="336" width="172" height="32" rx="9" fill="#fff" stroke="#E3E7EA"/><text x="398" y="357" fill="#4B535B">초대 · 확정</text>
-            <rect x="500" y="336" width="172" height="32" rx="9" fill="#fff" stroke="#E3E7EA"/><text x="586" y="357" fill="#4B535B">리마인더</text>
-            <rect x="688" y="336" width="172" height="32" rx="9" fill="#fff" stroke="#E3E7EA"/><text x="774" y="357" fill="#4B535B">날씨 경보</text>
-            <rect x="876" y="336" width="172" height="32" rx="9" fill="#fff" stroke="#E3E7EA"/><text x="962" y="357" fill="#4B535B">미읽음 뱃지</text>
+            <rect x="312" y="336" width="172" height="32" rx="9" fill="#fff"/><text x="398" y="357" fill="#1E5F62">초대 · 확정</text>
+            <rect x="500" y="336" width="172" height="32" rx="9" fill="#fff"/><text x="586" y="357" fill="#1E5F62">리마인더</text>
+            <rect x="688" y="336" width="172" height="32" rx="9" fill="#fff"/><text x="774" y="357" fill="#1E5F62">날씨 경보</text>
+            <rect x="876" y="336" width="172" height="32" rx="9" fill="#fff"/><text x="962" y="357" fill="#1E5F62">미읽음 뱃지</text>
           </g>
         </svg>
       </div>
@@ -511,9 +662,9 @@ svg .m{font-family:var(--mono)}
   <!-- 7. IA -->
   <section class="slide" id="ia">
     <div class="wrap">
-      <div class="secmark" data-r><span class="bn">05</span></div>
+      <div class="secmark" data-r><span class="bn">06</span></div>
       <div class="ey" data-r style="--i:1">Service Design</div>
-      <h2 class="st" data-r style="--i:1">화면은 세 층 — 온보딩 · 기본 화면 · 겹침 창</h2>
+      <h2 class="st" data-r style="--i:1">화면은 세 층 — 온보딩 · 기본 화면 · 오버레이</h2>
       <p class="lead" data-r style="--i:2">라우터 없이 <b>상태 하나</b>로 화면을 전환한다.</p>
       <div class="hr" data-r style="--i:2"></div>
       <div class="diagram" data-r style="--i:2">
@@ -542,7 +693,7 @@ svg .m{font-family:var(--mono)}
           </g>
           <text x="540" y="236" text-anchor="middle" font-size="13" font-weight="700" fill="#0B5540" class="m">사이드바 ＋ 버튼은 화면에 따라 의미가 바뀐다 — 새 약속 · 친구 추가 · 일정 추가</text>
 
-          <text x="16" y="284" font-size="12.5" font-weight="800" fill="#6B4C8A" class="m">③ 겹침 창 12종 — 기본 화면 위에 뜬다</text>
+          <text x="16" y="284" font-size="12.5" font-weight="800" fill="#6B4C8A" class="m">③ 오버레이 12종 — 기본 화면 위에 뜬다</text>
           <g text-anchor="middle" font-size="13.5" font-weight="700" class="m">
             <rect x="16" y="296" width="158" height="32" rx="9" fill="#F3F0F7" stroke="#E3D9EE"/><text x="95" y="317" fill="#553C72">날씨 드로어</text>
             <rect x="194" y="296" width="158" height="32" rx="9" fill="#F3F0F7" stroke="#E3D9EE"/><text x="273" y="317" fill="#553C72">AI 추천 챗</text>
@@ -736,7 +887,7 @@ svg .m{font-family:var(--mono)}
   <!-- 9. Architecture -->
   <section class="slide" id="arch">
     <div class="wrap">
-      <div class="ey" data-r>06 · System Design</div>
+      <div class="ey" data-r>07 · System Design</div>
       <h2 class="st" data-r style="--i:1">시스템 아키텍처</h2>
       <div class="hr" data-r style="--i:2"></div>
       <div class="imgframe" data-r style="--i:2">
@@ -833,7 +984,7 @@ svg .m{font-family:var(--mono)}
   <!-- 12. 추천 엔진 -->
   <section class="slide" id="nlp">
     <div class="wrap">
-      <div class="secmark" data-r><span class="bn">07</span></div>
+      <div class="secmark" data-r><span class="bn">08</span></div>
       <div class="ey" data-r style="--i:1">Engine 1 · 추천</div>
       <h2 class="st" data-r style="--i:1">LLM에게 “장소”를 묻지 않는다</h2>
       <p class="lead" data-r style="--i:2">“없는 가게를 말하지 마”라고 적어봤지만 소용없었다. 그래서 <b>물어보는 항목 자체를 바꿨다.</b></p>
@@ -864,6 +1015,7 @@ svg .m{font-family:var(--mono)}
           <g stroke="#AEB5BC" stroke-width="2.5" fill="none" marker-end="url(#d1)">
             <path d="M240,61 L284,61"/><path d="M518,61 L562,61"/><path d="M796,61 L840,61"/>
           </g>
+          <line x1="540" y1="6" x2="540" y2="124" stroke="#B23B32" stroke-width="2.4" stroke-dasharray="7 5" stroke-linecap="round"/>
           <rect x="470" y="124" width="140" height="32" rx="16" fill="#B23B32"/>
           <text x="540" y="146" text-anchor="middle" font-size="13.5" font-weight="800" fill="#fff">🛡 차단선</text>
           <text x="632" y="146" font-size="12.5" font-weight="700" fill="#B23B32" class="m">LLM이 상호명을 말해도 채택하지 않는다</text>
@@ -1119,7 +1271,7 @@ svg .m{font-family:var(--mono)}
   <!-- 16. 기술적 챌린지 -->
   <section class="slide" id="challenge">
     <div class="wrap">
-      <div class="secmark" data-r><span class="bn">08</span></div>
+      <div class="secmark" data-r><span class="bn">09</span></div>
       <div class="ey" data-r style="--i:1">Technical Challenges</div>
       <h2 class="st" data-r style="--i:1">고른 것과 버린 것</h2>
       <p class="lead" data-r style="--i:2">네 번의 갈림길에서 <b>무엇을 포기했는지</b> 적었다.</p>
@@ -1156,7 +1308,7 @@ svg .m{font-family:var(--mono)}
   <!-- 16. 인증 -->
   <section class="slide" id="auth-sec">
     <div class="wrap">
-      <div class="secmark" data-r><span class="bn">09</span></div>
+      <div class="secmark" data-r><span class="bn">10</span></div>
       <div class="ey" data-r style="--i:1">Auth &amp; Security</div>
       <h2 class="st" data-r style="--i:1">인증 — 토큰은 쿠키에만 둔다</h2>
       <div class="hr" data-r style="--i:2"></div>
@@ -1214,7 +1366,7 @@ svg .m{font-family:var(--mono)}
   <!-- 17. 구현 결과 -->
   <section class="slide" id="impl1">
     <div class="wrap">
-      <div class="secmark" data-r><span class="bn">10</span></div>
+      <div class="secmark" data-r><span class="bn">11</span></div>
       <div class="ey" data-r style="--i:1">Result</div>
       <h2 class="st" data-r style="--i:1">구현 결과</h2>
       <div class="hr" data-r style="--i:2"></div>
@@ -1271,7 +1423,7 @@ svg .m{font-family:var(--mono)}
         <div class="m"><div class="mv">53</div><div class="ml">API 엔드포인트</div></div>
         <div class="m"><div class="mv">16</div><div class="ml">테이블</div></div>
         <div class="m"><div class="mv">8</div><div class="ml">외부 API</div></div>
-        <div class="m"><div class="mv">17</div><div class="ml">화면 · 겹침 창</div></div>
+        <div class="m"><div class="mv">17</div><div class="ml">화면 · 오버레이</div></div>
         <div class="m"><div class="mv">5 / 5</div><div class="ml">기능군 완료</div></div>
       </div>
     </div>
@@ -1312,7 +1464,7 @@ svg .m{font-family:var(--mono)}
   <!-- 19. 트러블슈팅 -->
   <section class="slide" id="trouble">
     <div class="wrap">
-      <div class="secmark" data-r><span class="bn">11</span></div>
+      <div class="secmark" data-r><span class="bn">12</span></div>
       <div class="ey" data-r style="--i:1">Troubleshooting</div>
       <h2 class="st" data-r style="--i:1">원인을 찾는 데 가장 오래 걸린 4가지</h2>
       <p class="lead" data-r style="--i:2">넷 다 <b>프레임워크가 알아서 해주리라 믿었던 자리</b>에서 났다.</p>
@@ -1361,48 +1513,40 @@ svg .m{font-family:var(--mono)}
   <!-- 20. 회고 -->
   <section class="slide" id="retro">
     <div class="wrap">
-      <div class="secmark" data-r><span class="bn">12</span></div>
+      <div class="secmark" data-r><span class="bn">13</span></div>
       <div class="ey" data-r style="--i:1">Retrospective</div>
-      <h2 class="st" data-r style="--i:1">회고</h2>
+      <h2 class="st" data-r style="--i:1">회고 — 다시 한다면 순서를 바꾼다</h2>
+      <p class="lead" data-r style="--i:2">기능은 대부분 만들었다. 시간을 가장 많이 쓴 건 기능이 아니라 <b>뒤늦게 바꾼 결정</b>이었다.</p>
       <div class="hr" data-r style="--i:2"></div>
       <div class="grid3">
         <div class="rcol" data-r style="--i:2">
-          <h4><span class="bar" style="background:var(--green)"></span>잘한 것</h4>
+          <h4><span class="bar" style="background:var(--gold)"></span>순서를 잘못 잡은 것</h4>
           <ul>
-            <li>도메인 단위로 나눠 <b>4명이 4주간 거의 충돌 없이</b> 병렬 개발했다</li>
-            <li>환각을 프롬프트 대신 <b>구조</b>로 막아서, 프롬프트를 손대지 않아도 품질이 유지됐다</li>
-            <li>외부 API 하나가 죽어도 화면은 살아 있게, <b>실패할 때 뭘 보여줄지</b> 먼저 정해뒀다</li>
-            <li>중복과 정합성은 <b>DB 제약</b>에 맡겼다. 코드로 막으면 빠뜨리는 곳이 생긴다</li>
+            <li>약속을 <b>임시 구조로 먼저</b> 만들었다. 조율 로직을 붙인 뒤에야 데이터 모델을 전면 재설계했다</li>
+            <li>레포 3개의 계약을 <b>문서로만</b> 맞췄다. 카테고리 개수 같은 불일치를 통합할 때 발견했다</li>
+            <li>보안 설정을 <b>맨 뒤로 미뤘다.</b> 로컬에서 되는 값이 그대로 남았다</li>
           </ul>
         </div>
         <div class="rcol" data-r style="--i:3">
-          <h4><span class="bar" style="background:var(--gold)"></span>아쉬운 것</h4>
+          <h4><span class="bar" style="background:var(--blue)"></span>아직 코드에 남아 있는 것</h4>
           <ul>
-            <li>약속을 임시 구조로 먼저 만들어 중간에 <b>데이터 모델을 전면 재설계</b>했다</li>
-            <li>레포 3개의 계약을 문서로만 맞춰, 카테고리 개수 같은 <b>불일치를 뒤늦게</b> 발견했다</li>
-            <li>테스트가 날씨·약속에 몰려 있고 <b>나머지 도메인은 얇다</b></li>
-            <li>쿠키 <b>secure</b> 등 배포용 보안 설정이 개발값으로 남아 있다</li>
+            <li><b>쿠키 3곳이 <code>.secure(false)</code></b> — “https 전제” 주석만 달아둔 채 개발값 그대로다</li>
+            <li><b><code>sameSite("Lax")</code></b> 옆에 무엇을 막을지 정하지 못한 TODO가 남아 있다</li>
+            <li>테스트가 <b>날씨 · 약속에 몰려</b> 있어 나머지 도메인은 고칠 때마다 손으로 확인했다</li>
           </ul>
         </div>
         <div class="rcol" data-r style="--i:4">
-          <h4><span class="bar" style="background:var(--blue)"></span>다음에 할 것</h4>
+          <h4><span class="bar" style="background:var(--green)"></span>다음에 할 것</h4>
           <ul>
-            <li>가중치에 <b>날씨 축</b>을 실제로 반영해 맥락을 더 잘게 나눈다</li>
-            <li>추천 수락률을 <b>계측</b>해 신호 값을 데이터로 조정한다</li>
-            <li>알림을 폴링에서 <b>실시간</b>으로, 이후 푸시까지 확장한다</li>
             <li>HTTPS · 시크릿 관리 · <b>CI 게이트</b>로 배포 파이프라인을 마무리한다</li>
+            <li>추천 수락률을 <b>계측</b>해 신호 값을 감이 아니라 데이터로 조정한다</li>
+            <li>가중치에 <b>날씨 축</b>을 실제로 반영해 맥락을 더 잘게 나눈다</li>
           </ul>
         </div>
       </div>
-      <div class="grid2" data-r style="--i:5;margin-top:20px">
-        <div class="card" style="border-left:3px solid var(--green)">
-          <div class="ch">검증할 수 없는 일은 모델에게 맡기지 않는다</div>
-          <div class="cd">실재하는 장소, 시각 계산, 권한 판단을 LLM에서 걷어내자 <b>프롬프트를 고치지 않아도 품질이 안정됐다.</b> 프롬프트를 다듬는 시간보다 맡기지 않을 일을 정하는 시간이 더 값졌다.</div>
-        </div>
-        <div class="card" style="border-left:3px solid var(--gold)">
-          <div class="ch">편한 기본값일수록 무엇을 가정하는지 봐야 한다</div>
-          <div class="cd">트랜잭션 경계, 커넥션 반납 시점, 기본 시간대, 동시 쓰기. <b>네 건이 모두 프레임워크가 대신 해주던 자리</b>에서 나왔다. 편한 기본값일수록 무엇을 가정하는지 봐야 했다.</div>
-        </div>
+      <div class="card" data-r style="--i:5;margin-top:20px;border-left:3px solid var(--gold)">
+        <div class="ch">고장은 대부분 도메인 안이 아니라 경계에서 났다</div>
+        <div class="cd">원인 찾는 데 가장 오래 걸린 <b>4건 중 3건</b>이 넘어가는 지점에서 났다 — 트랜잭션 경계, 커넥션 반납 시점, 컨테이너 시간대. 도메인을 통째로 나눠 각자 빨리 갈 수 있었던 대신, <b>사이를 보는 사람이 없었다.</b></div>
       </div>
     </div>
   </section>
