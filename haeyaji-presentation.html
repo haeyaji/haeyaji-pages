@@ -1,0 +1,1486 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>해야지 — 설계·구현 발표</title>
+<style>
+:root{
+  --ink:#14171A; --ink2:#4B535B; --ink3:#767E86; --faint:#A2A9B1;
+  --paper:#F7F8F9; --card:#FFFFFF; --card2:#F5F7F8; --line:#E3E7EA; --line2:#EDF0F2;
+  --green:#15795A; --greenD:#0B5540; --greenL:#EDF4F1; --mint:#57B48C;
+  --gold:#B4791F; --goldL:#F7F2E8; --blue:#2E6BA8; --blueL:#EFF3F8;
+  --red:#B23B32; --redL:#F8EFEC; --violet:#6B4C8A; --violetL:#F3F0F7;
+  --sans:"Pretendard","Apple SD Gothic Neo","맑은 고딕","Malgun Gothic","Noto Sans KR",system-ui,-apple-system,sans-serif;
+  --mono:"SFMono-Regular","JetBrains Mono","D2Coding",ui-monospace,Consolas,"Courier New",monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:break-word}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+.deck{position:fixed;inset:0}
+.slide{position:absolute;inset:0;opacity:0;pointer-events:none;z-index:1;
+  transition:opacity .42s ease;overflow:auto;display:flex;flex-direction:column;background:var(--paper)}
+.slide.active{opacity:1;pointer-events:auto;z-index:2}
+.wrap{width:100%;max-width:1480px;margin:auto;padding:46px 48px 60px}
+@media screen and (max-width:820px){.wrap{padding:32px 22px 58px}}
+
+[data-r]{opacity:0;transform:translateY(14px);transition:opacity .55s ease, transform .55s cubic-bezier(.3,0,.1,1)}
+.slide.active [data-r]{opacity:1;transform:none;transition-delay:calc(var(--i,0)*70ms + 100ms)}
+
+.ey{font-family:var(--mono);font-size:15px;letter-spacing:.22em;text-transform:uppercase;color:var(--green);font-weight:700}
+h2.st{font-size:clamp(30px,3.6vw,41px);font-weight:850;letter-spacing:-.03em;margin:10px 0 0;line-height:1.12}
+.lead{font-size:19px;color:var(--ink2);margin:13px 0 0;max-width:78ch;line-height:1.55;font-weight:500}
+.lead b{color:var(--ink);font-weight:800}
+.hr{height:2px;background:var(--ink);width:52px;margin:20px 0 28px;border-radius:2px}
+
+.foot{position:fixed;left:0;right:0;bottom:0;height:40px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 22px;font-family:var(--mono);font-size:13.5px;color:var(--faint);z-index:40;pointer-events:none}
+.foot .fb{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--ink3)}
+.foot .fb .d{width:9px;height:9px;border-radius:3px;background:var(--green)}
+.progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--green),var(--mint));z-index:50;width:0;transition:width .4s ease}
+.nav{position:fixed;bottom:6px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:45}
+.nav button{width:34px;height:26px;border:1px solid var(--line);background:var(--card);border-radius:8px;cursor:pointer;color:var(--ink2);font-size:19px;display:flex;align-items:center;justify-content:center;transition:.15s}
+.nav button:hover{border-color:var(--green);color:var(--green)}
+.count{position:fixed;bottom:11px;right:22px;font-family:var(--mono);font-size:13.5px;color:var(--ink3);z-index:45;font-weight:700}
+.count b{color:var(--green)}
+
+/* cover — 장식 없이 타이포만 */
+#cover{background:var(--paper)}
+#cover .wrap{max-width:1200px}
+#cover .kick{font-family:var(--mono);font-size:15px;letter-spacing:.26em;color:var(--green);font-weight:700;text-transform:uppercase}
+#cover h1{font-size:clamp(60px,9.6vw,132px);font-weight:900;letter-spacing:-.055em;line-height:.94;margin:18px 0 0;color:var(--ink)}
+#cover h1 .g{color:#F3792B}
+#cover .tag{font-size:clamp(19px,2.3vw,24px);color:var(--ink2);margin:28px 0 0;max-width:46ch;line-height:1.6;font-weight:500}
+.cvrule{height:1px;width:min(560px,66%);background:var(--line);margin:46px 0 28px}
+#cover .meta{display:flex;gap:56px;flex-wrap:wrap}
+#cover .meta .mc{border:0;padding:0;background:none;backdrop-filter:none}
+#cover .meta .mc .k{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);font-weight:700}
+#cover .meta .mc .v{font-size:17px;font-weight:800;margin-top:8px;color:var(--ink)}
+
+/* TOC */
+.toc{display:grid;grid-template-columns:1fr 1fr;gap:4px 34px}
+@media screen and (max-width:820px){.toc{grid-template-columns:1fr}}
+.toc a{display:flex;align-items:baseline;gap:14px;text-decoration:none;color:var(--ink);padding:11px 6px;border-bottom:1px solid var(--line2);transition:.15s;cursor:pointer}
+.toc a:hover{color:var(--green);border-color:var(--green);padding-left:12px}
+.toc a .n{font-family:var(--mono);font-size:16px;font-weight:800;color:var(--green);min-width:24px}
+.toc a .t{font-size:20px;font-weight:700;letter-spacing:-.01em}
+
+/* helpers */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.grid6{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.grid6 .card{padding:13px 14px}
+.grid6 .ch{font-size:14.6px}
+.grid6 .cd{font-size:13.2px;margin-top:7px;line-height:1.45}
+@media screen and (max-width:900px){.grid2,.grid3,.grid4,.grid6{grid-template-columns:1fr}}
+.two{display:grid;grid-template-columns:1.05fr .95fr;gap:32px;align-items:center}
+.two.rev{grid-template-columns:.92fr 1.08fr}
+.two.top{align-items:start}
+@media screen and (max-width:960px){.two,.two.rev{grid-template-columns:1fr}}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:17px 19px;box-shadow:0 3px 12px rgba(21,19,16,.05)}
+.card .ch{font-weight:850;font-size:17px;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+.card .cd{font-size:15.4px;color:var(--ink2);margin-top:9px;line-height:1.55}
+.card .cd b{color:var(--ink);font-weight:800}
+.gcard{background:var(--card);border:1px solid var(--line);border-left-width:3px;border-radius:11px;padding:11px 14px}
+.gcard .gt{font-size:14.5px;font-weight:850;letter-spacing:-.01em}
+.gcard .gl{font-family:var(--mono);font-size:11.6px;color:var(--ink3);margin-top:5px;line-height:1.45}
+
+.stats{display:flex;gap:14px;flex-wrap:wrap}
+.stat{flex:1;min-width:120px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 18px;box-shadow:0 3px 12px rgba(21,19,16,.05)}
+.stat .v{font-size:32px;font-weight:900;letter-spacing:-.03em;color:var(--green);line-height:1}
+.stat .v small{font-size:17px;color:var(--ink2);font-weight:800}
+.stat .l{font-size:13.6px;color:var(--ink3);margin-top:9px;font-weight:600;line-height:1.35}
+
+.imgframe{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center;box-shadow:0 8px 24px rgba(21,19,16,.06)}
+.imgframe img{max-width:100%;max-height:60vh;border-radius:8px;display:block;margin:0 auto;cursor:zoom-in}
+#arch .hr{margin:14px 0 18px}
+#arch .imgframe img{max-height:74vh}
+#erd .imgframe img{max-height:64vh}
+#erd .imgframe{max-width:826px;margin-left:auto;margin-right:auto}
+.imgcap{font-family:var(--mono);font-size:13px;color:var(--faint);margin-top:9px}
+
+.secmark{display:inline-flex;align-items:center;gap:12px;margin-bottom:6px}
+.secmark .bn{font-family:var(--mono);font-size:38px;font-weight:900;color:var(--greenL);-webkit-text-stroke:1.5px var(--green);line-height:1}
+
+.video{position:relative;background:linear-gradient(135deg,#12352a,#0d211b);border-radius:16px;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#cfe3d9;border:1px solid var(--line)}
+.video .play{width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+
+.chips{display:flex;flex-wrap:wrap;gap:10px}
+.chip{font-size:15px;font-weight:700;padding:8px 14px;border-radius:9px;background:var(--greenL);color:var(--greenD)}
+.chip.v{background:var(--violetL);color:var(--violet)}
+.chip.n{background:#EFF1F4;color:var(--ink2);font-family:var(--mono);font-size:13.5px}
+
+.hint{font-family:var(--mono);font-size:13.4px;color:var(--faint);margin-top:12px;line-height:1.55}
+
+/* diagrams */
+.diagram{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 22px;overflow-x:auto;box-shadow:0 5px 20px rgba(21,19,16,.055)}
+.diagram.tp{background:transparent;border:none;box-shadow:none;padding:0}
+.diagram svg{display:block;margin:0 auto;max-width:100%;height:auto}
+svg text{font-family:var(--sans)}
+svg .m{font-family:var(--mono)}
+
+/* tech badges */
+.tech{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.tech .t{display:inline-flex;align-items:center;gap:9px;background:#F4F6F8;border:1px solid var(--line);border-radius:11px;padding:8px 13px 8px 10px;font-size:14.5px;font-weight:700;color:var(--ink)}
+.tech .t svg{width:20px;height:20px;flex-shrink:0;display:block}
+.tech .t small{font-family:var(--mono);font-size:11.6px;color:var(--faint);font-weight:700}
+
+/* person */
+.pcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 17px;box-shadow:0 3px 12px rgba(21,19,16,.05);text-align:center}
+.pcard .av{width:48px;height:48px;border-radius:14px;margin:0 auto 11px;display:flex;align-items:center;justify-content:center;font-size:23px}
+.pcard .pn{font-size:19px;font-weight:850}
+.pcard .pr{font-size:13px;font-weight:800;color:var(--green);margin-top:7px;font-family:var(--mono);line-height:1.5}
+
+/* trouble */
+.tcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;box-shadow:0 3px 12px rgba(20,23,26,.05)}
+.chcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;box-shadow:0 3px 12px rgba(20,23,26,.05)}
+.chcard .tt{font-weight:850;font-size:17px;margin-top:11px;letter-spacing:-.01em}
+.opts{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
+.opt{font-size:13.2px;font-weight:700;padding:6px 11px;border-radius:8px;background:var(--card2);
+  color:var(--faint);border:1px solid var(--line2);text-decoration:line-through;text-decoration-thickness:1px}
+.opt.pick{background:var(--greenL);color:var(--greenD);border-color:#CFE4D9;text-decoration:none}
+.why{font-size:14.6px;color:var(--ink2);margin-top:13px;line-height:1.52}
+.why b{color:var(--ink);font-weight:800}
+.chcard .tg{display:inline-block;font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink3);background:var(--card2);border:1px solid var(--line2);border-radius:5px;padding:2px 7px}
+.tcard .tg{display:inline-block;font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink3);background:var(--card2);border:1px solid var(--line2);border-radius:5px;padding:2px 7px}
+.tcard .tt{font-weight:850;font-size:17px;margin-top:11px;letter-spacing:-.01em}
+.tcard dl{display:grid;grid-template-columns:auto 1fr;gap:7px 12px;margin:13px 0 0}
+.tcard dt{font-family:var(--mono);font-size:11.5px;font-weight:700;color:var(--faint);padding-top:2px;letter-spacing:.06em}
+.tcard dd{margin:0;font-size:14.6px;color:var(--ink2);line-height:1.5}
+.tcard dd.fix{color:var(--greenD);font-weight:700}
+.rcol{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;box-shadow:0 3px 12px rgba(20,23,26,.05)}
+.rcol h4{margin:0;font-size:16.5px;font-weight:850;display:flex;align-items:center;gap:8px}
+.rcol h4 .bar{width:22px;height:3px;border-radius:2px}
+.rcol ul{margin:14px 0 0;padding:0;list-style:none}
+.rcol li{font-size:14.8px;color:var(--ink2);line-height:1.5;padding:0 0 0 15px;position:relative;margin-bottom:11px}
+.rcol li:before{content:"";position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:50%;background:var(--faint)}
+.rcol li b{color:var(--ink);font-weight:800}
+
+/* metric row */
+.mrow{display:flex;flex-wrap:wrap;gap:11px}
+.mrow .m{flex:1;min-width:114px;background:var(--card2);border:1px solid var(--line2);border-radius:11px;padding:13px 13px;text-align:center}
+.mrow .m .mv{font-family:var(--mono);font-size:20px;font-weight:900;color:var(--green);letter-spacing:-.02em}
+.mrow .m .ml{font-size:12.4px;color:var(--ink3);margin-top:4px;font-weight:600}
+
+/* 브랜드 마크 */
+.logo-lg{display:block;width:54px;height:54px;margin:0 0 30px}
+.logo-qa{display:block;width:104px;height:104px;margin:0 auto 6px}
+.slidemark{position:absolute;top:34px;right:48px;width:27px;height:27px;opacity:.5;z-index:3;pointer-events:none}
+.foot .fb .lm{width:17px;height:17px;display:block}
+
+/* ── 인쇄 / PDF (가로 16:9) ───────────────────────────── */
+@page{size:1600px 900px;margin:0}
+@media print{
+  html,body{overflow:visible!important;height:auto!important;background:#fff}
+  .deck{position:static!important;inset:auto!important}
+  .slide{position:relative!important;inset:auto!important;opacity:1!important;pointer-events:auto!important;
+    width:1600px!important;height:900px!important;overflow:hidden!important;
+    page-break-after:always;break-after:page;page-break-inside:avoid;break-inside:avoid;
+    display:flex!important;align-items:center;transition:none!important}
+  .slide:last-child{page-break-after:auto;break-after:auto}
+  [data-r]{opacity:1!important;transform:none!important;transition:none!important;transition-delay:0s!important}
+  .progress,.nav,.count,.foot{display:none!important}
+  .wrap{max-width:1500px!important;padding:32px 52px!important;margin:auto!important}
+  .slidemark{top:32px!important;right:102px!important}
+  .imgframe img{max-height:520px!important}
+  #arch .wrap,#erd .wrap{padding:20px 40px!important}
+  #arch .hr,#erd .hr{margin:14px 0 16px!important}
+  #arch .imgframe img{max-height:700px!important}
+  #erd .imgframe img{max-height:632px!important}
+  #erd .imgframe{max-width:826px!important;margin-left:auto!important;margin-right:auto!important}
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+}
+</style>
+</head>
+<body>
+<!-- 브랜드 마크 — haeyaji-logo.png 실측(중심 23.5,23.4 · 링 r8 w3 · 광선 r12→15.5)을 벡터로 재현 -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="lgrad" x1="1" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#F3792B"/><stop offset="1" stop-color="#FAB42E"/>
+  </linearGradient>
+  <symbol id="logo" viewBox="0 0 48 48">
+    <g fill="none" stroke="url(#lgrad)" stroke-width="3" stroke-linecap="round">
+      <circle cx="24" cy="24" r="8"/>
+      <path d="M24 12V8.5M24 36v3.5M36 24h3.5M12 24H8.5M32.5 15.5 35 13M15.5 32.5 13 35M32.5 32.5 35 35M15.5 15.5 13 13"/>
+    </g>
+    <path d="M19.3 23.9 23 27.1 28.7 20.2" fill="none" stroke="url(#lgrad)"
+          stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+</defs></svg>
+<div class="progress" id="prog"></div>
+<div class="deck" id="deck">
+
+  <!-- 1. COVER -->
+  <section class="slide" id="cover">
+    <div class="wrap">
+      <svg class="logo-lg" data-r style="--i:0" viewBox="0 0 48 48" aria-label="해야지 로고"><use href="#logo"/></svg>
+      <div class="kick" data-r style="--i:1">2026 · 팀 프로젝트 설계·구현 발표</div>
+      <h1 data-r style="--i:2">해야지<span class="g">.</span></h1>
+      <p class="tag" data-r style="--i:3">날씨·위치·취향으로 “오늘 뭐 하지”를 풀고,<br>친구와의 약속 시간까지 잡아주는 투두 앱.</p>
+      <div class="cvrule" data-r style="--i:4"></div>
+      <div class="meta">
+        <div class="mc" data-r style="--i:5"><div class="k">Team</div><div class="v">허건 · 이호성 · 김현우 · 유희준</div></div>
+        <div class="mc" data-r style="--i:6"><div class="k">Stack</div><div class="v">React · Spring Boot · FastAPI</div></div>
+        <div class="mc" data-r style="--i:7"><div class="k">Period</div><div class="v">2026. 07</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. TOC -->
+  <section class="slide" id="toc">
+    <div class="wrap">
+      <div class="ey" data-r>Agenda</div>
+      <h2 class="st" data-r style="--i:1">목차</h2>
+      <div class="hr" data-r style="--i:2"></div>
+      <div class="two">
+        <nav class="toc">
+          <a data-r style="--i:2" data-go="team"><span class="n">01</span><span class="t">팀 소개</span></a>
+          <a data-r style="--i:3" data-go="bg"><span class="n">02</span><span class="t">문제 정의</span></a>
+          <a data-r style="--i:4" data-go="diff"><span class="n">03</span><span class="t">해결 방식</span></a>
+          <a data-r style="--i:5" data-go="feat"><span class="n">04</span><span class="t">기능 구조</span></a>
+          <a data-r style="--i:6" data-go="ia"><span class="n">05</span><span class="t">서비스 설계</span></a>
+          <a data-r style="--i:7" data-go="arch"><span class="n">06</span><span class="t">시스템 설계</span></a>
+          <a data-r style="--i:8" data-go="nlp"><span class="n">07</span><span class="t">핵심 엔진</span></a>
+          <a data-r style="--i:9" data-go="challenge"><span class="n">08</span><span class="t">기술적 챌린지</span></a>
+          <a data-r style="--i:10" data-go="auth-sec"><span class="n">09</span><span class="t">인증 · 보안</span></a>
+          <a data-r style="--i:11" data-go="impl1"><span class="n">10</span><span class="t">구현 결과 · 시연</span></a>
+          <a data-r style="--i:12" data-go="trouble"><span class="n">11</span><span class="t">트러블슈팅</span></a>
+          <a data-r style="--i:13" data-go="retro"><span class="n">12</span><span class="t">회고</span></a>
+          <a data-r style="--i:14" data-go="qa"><span class="n">13</span><span class="t">Q&amp;A</span></a>
+        </nav>
+        <div class="diagram tp" data-r style="--i:4">
+          <svg viewBox="0 0 460 366" width="440">
+            <defs>
+              <marker id="ar" markerUnits="userSpaceOnUse" markerWidth="13" markerHeight="13" refX="12" refY="6.5" orient="auto"><path d="M0,0 L13,6.5 L0,13z" fill="#C4CAD0"/></marker>
+              <linearGradient id="tg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#15795A"/><stop offset="1" stop-color="#57B48C"/></linearGradient>
+            </defs>
+            <rect x="26" y="20" width="14" height="320" rx="7" fill="url(#tg)" opacity=".2"/>
+            <g>
+              <circle cx="33" cy="52" r="12" fill="#15795A"/><text x="33" y="57" text-anchor="middle" font-size="12.5" font-weight="800" fill="#fff" class="m">1</text>
+              <rect x="72" y="26" width="372" height="52" rx="12" fill="#EDF4F1" stroke="#15795A"/>
+              <text x="96" y="48" font-size="15.5" font-weight="850" fill="#0B5540">문제 · 해결 방식</text>
+              <text x="96" y="68" font-size="12.5" fill="#4B535B" class="m">앱 4개로 흩어진 동선을 하나로</text>
+            </g>
+            <g>
+              <circle cx="33" cy="146" r="12" fill="#2E6BA8"/><text x="33" y="151" text-anchor="middle" font-size="12.5" font-weight="800" fill="#fff" class="m">2</text>
+              <rect x="72" y="120" width="372" height="52" rx="12" fill="#EFF3F8" stroke="#2E6BA8"/>
+              <text x="96" y="142" font-size="15.5" font-weight="850" fill="#1E4E7E">서비스 · 시스템 설계</text>
+              <text x="96" y="162" font-size="12.5" fill="#4B535B" class="m">화면 구조 · 아키텍처 · 데이터</text>
+            </g>
+            <g>
+              <circle cx="33" cy="240" r="12" fill="#6B4C8A"/><text x="33" y="245" text-anchor="middle" font-size="12.5" font-weight="800" fill="#fff" class="m">3</text>
+              <rect x="72" y="214" width="372" height="52" rx="12" fill="#F3F0F7" stroke="#6B4C8A"/>
+              <text x="96" y="236" font-size="15.5" font-weight="850" fill="#553C72">핵심 엔진 · 구현</text>
+              <text x="96" y="256" font-size="12.5" fill="#4B535B" class="m">추천 · 개인화 · 약속 · 날씨</text>
+            </g>
+            <g>
+              <circle cx="33" cy="334" r="12" fill="#B4791F"/><text x="33" y="339" text-anchor="middle" font-size="12.5" font-weight="800" fill="#fff" class="m">4</text>
+              <rect x="72" y="308" width="372" height="52" rx="12" fill="#F7F2E8" stroke="#B4791F"/>
+              <text x="96" y="330" font-size="15.5" font-weight="850" fill="#8A5A12">트러블슈팅 · 회고</text>
+              <text x="96" y="350" font-size="12.5" fill="#4B535B" class="m">실제로 깨졌던 것들</text>
+            </g>
+            <g stroke="#C4CAD0" stroke-width="2" fill="none" marker-end="url(#ar)">
+              <path d="M33,68 L33,128"/><path d="M33,162 L33,222"/><path d="M33,256 L33,316"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. TEAM -->
+  <section class="slide" id="team">
+    <div class="wrap">
+      <div class="secmark" data-r><span class="bn">01</span></div>
+      <div class="ey" data-r style="--i:1">Team</div>
+      <h2 class="st" data-r style="--i:1">4인 · 도메인 하나씩 통째로</h2>
+      <p class="lead" data-r style="--i:2">한 사람이 <b>화면부터 테이블까지</b> 맡았다. 덕분에 4주 동안 서로 기다리는 일이 거의 없었다.</p>
+      <div class="hr" data-r style="--i:2"></div>
+      <div class="grid4" style="margin-bottom:22px">
+        <div class="pcard" data-r style="--i:3"><div class="av" style="background:#EDF4F1">🎨</div><div class="pn">허건</div><div class="pr">Frontend 전담<br>날씨 · 추천 · 개인화</div></div>
+        <div class="pcard" data-r style="--i:4"><div class="av" style="background:#EFF3F8">✅</div><div class="pn">이호성</div><div class="pr">할 일 · 루틴 · 라벨</div></div>
+        <div class="pcard" data-r style="--i:5"><div class="av" style="background:#F3F0F7">🔐</div><div class="pn">김현우</div><div class="pr">인증 · 회원 · 친구</div></div>
+        <div class="pcard" data-r style="--i:6"><div class="av" style="background:#F7F2E8">🗓️</div><div class="pn">유희준</div><div class="pr">약속 조율 · 설계</div></div>
+      </div>
+      <div class="diagram" data-r style="--i:7">
+        <svg viewBox="0 0 1080 250">
+          <defs><marker id="a2" markerUnits="userSpaceOnUse" markerWidth="13" markerHeight="13" refX="12" refY="6.5" orient="auto"><path d="M0,0 L13,6.5 L0,13z" fill="#AEB5BC"/></marker></defs>
+          <text x="16" y="20" font-size="12.5" font-weight="800" fill="#767E86" class="m">담당 → 코드 패키지</text>
+
+          <g text-anchor="middle" font-weight="850" font-size="15">
+            <rect x="16" y="34" width="220" height="44" rx="12" fill="#EDF4F1" stroke="#15795A" stroke-width="1.2"/><text x="126" y="62" fill="#0B5540">허건</text>
+            <rect x="292" y="34" width="220" height="44" rx="12" fill="#EFF3F8" stroke="#2E6BA8" stroke-width="1.2"/><text x="402" y="62" fill="#1E4E7E">이호성</text>
+            <rect x="568" y="34" width="220" height="44" rx="12" fill="#F3F0F7" stroke="#6B4C8A" stroke-width="1.2"/><text x="678" y="62" fill="#553C72">김현우</text>
+            <rect x="844" y="34" width="220" height="44" rx="12" fill="#F7F2E8" stroke="#B4791F" stroke-width="1.2"/><text x="954" y="62" fill="#8A5A12">유희준</text>
+          </g>
+
+          <g stroke="#AEB5BC" stroke-width="2" fill="none" marker-end="url(#a2)">
+            <path d="M126,84 L126,124"/><path d="M402,84 L402,124"/><path d="M678,84 L678,124"/><path d="M954,84 L954,124"/>
+          </g>
+
+          <g text-anchor="middle" font-size="13" font-weight="700" class="m">
+            <rect x="16" y="132" width="104" height="30" rx="9" fill="#F1F3F5" stroke="#D6DBE0"/><text x="68" y="152" fill="#4B535B">fe 전체</text>
+            <rect x="132" y="132" width="104" height="30" rx="9" fill="#F1F3F5" stroke="#D6DBE0"/><text x="184" y="152" fill="#4B535B">weather</text>
+            <rect x="16" y="172" width="104" height="30" rx="9" fill="#F1F3F5" stroke="#D6DBE0"/><text x="68" y="192" fill="#4B535B">recommend</text>
+            <rect x="132" y="172" width="104" height="30" rx="9" fill="#F1F3F5" stroke="#D6DBE0"/><text x="184" y="192" fill="#4B535B">profile</text>
+
+            <rect x="292" y="132" width="104" height="30" rx="9" fill="#F1F3F5" stroke="#D6DBE0"/><text x="344" y="152" fill="#4B535B">todo</text>
+            <rect x="408" y="132" width="104" height="30" rx="9" fill="#F1F3F5" stroke="#D6DBE0"/><text x="460" y="152" fill="#4B535B">routine</text>
+            <rect x="350" y="172" width="104" height="30" rx="9" fill="#F1F3F5" stroke="#D6DBE0"/><text x="402" y="192" fill="#4B535B">label</text>
+
+            <rect x="568" y="132" width="104" height="30" rx="9" fill="#F1F3F5" stroke="#D6DBE0"/><text x="620" y="152" fill="#4B535B">member</text>
+            <rect x="684" y="132" width="104" height="30" rx="9" fill="#F1F3F5" stroke="#D6DBE0"/><text x="736" y="152" fill="#4B535B">friend</text>
+            <rect x="626" y="172" width="104" height="30" rx="9" fill="#F1F3F5" stroke="#D6DBE0"/><text x="678" y="192" fill="#4B535B">config</text>
+
+            <rect x="844" y="132" width="104" height="30" rx="9" fill="#F1F3F5" stroke="#D6DBE0"/><text x="896" y="152" fill="#4B535B">meeting</text>
+            <rect x="960" y="132" width="104" height="30" rx="9" fill="#F1F3F5" stroke="#D6DBE0"/><text x="1012" y="152" fill="#4B535B">설계</text>
+          </g>
+
+          <rect x="16" y="212" width="1048" height="34" rx="11" fill="#16191E"/>
+          <text x="540" y="234" text-anchor="middle" font-size="13" font-weight="800" fill="#8FD8BA" class="m">도메인끼리 직접 호출하지 않는다 — UUID 참조와 이벤트로만 연결한다</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 문제 정의 -->
+  <section class="slide" id="bg">
+    <div class="wrap">
+      <div class="secmark" data-r><span class="bn">02</span></div>
+      <div class="ey" data-r style="--i:1">Problem</div>
+      <h2 class="st" data-r style="--i:1">앱 4개를 오가며 5단계</h2>
+      <p class="lead" data-r style="--i:2">“주말에 뭐 하지”를 정하는 데 실제로 필요한 동선.</p>
+      <div class="hr" data-r style="--i:2"></div>
+      <div class="diagram" data-r style="--i:2">
+        <svg viewBox="0 0 1080 312">
+          <defs><marker id="a3" markerUnits="userSpaceOnUse" markerWidth="16" markerHeight="16" refX="15" refY="8" orient="auto"><path d="M0,0 L16,8 L0,16z" fill="#15795A"/></marker></defs>
+
+          <text x="16" y="20" font-size="13" font-weight="800" fill="#B23B32" class="m">AS-IS · 흩어진 동선</text>
+          <g font-size="15" font-weight="700">
+            <rect x="16" y="32" width="380" height="46" rx="11" fill="#F8EFEC" stroke="#E4C6C1"/>
+            <text x="36" y="61" fill="#B23B32" font-weight="900" class="m">1</text><text x="62" y="61" fill="#4B535B">🌦️ 날씨 앱에서 비 오는지 확인</text>
+            <rect x="16" y="86" width="380" height="46" rx="11" fill="#F8EFEC" stroke="#E4C6C1"/>
+            <text x="36" y="115" fill="#B23B32" font-weight="900" class="m">2</text><text x="62" y="115" fill="#4B535B">🗺️ 지도 앱에서 갈 곳 검색</text>
+            <rect x="16" y="140" width="380" height="46" rx="11" fill="#F8EFEC" stroke="#E4C6C1"/>
+            <text x="36" y="169" fill="#B23B32" font-weight="900" class="m">3</text><text x="62" y="169" fill="#4B535B">💬 메신저로 친구에게 제안</text>
+            <rect x="16" y="194" width="380" height="46" rx="11" fill="#F8EFEC" stroke="#E4C6C1"/>
+            <text x="36" y="223" fill="#B23B32" font-weight="900" class="m">4</text><text x="62" y="223" fill="#4B535B">🕓 외부 툴로 시간 맞추기</text>
+            <rect x="16" y="248" width="380" height="46" rx="11" fill="#B23B32"/>
+            <text x="36" y="277" fill="#fff" font-weight="900" class="m">5</text><text x="62" y="277" fill="#fff" font-weight="800">✅ 정한 뒤 캘린더에 다시 입력</text>
+          </g>
+
+          <path d="M420,163 L500,163" stroke="#15795A" stroke-width="3.5" fill="none" marker-end="url(#a3)"/>
+
+          <text x="524" y="20" font-size="13" font-weight="800" fill="#0B5540" class="m">TO-BE · 하나의 앱</text>
+          <rect x="524" y="32" width="540" height="262" rx="18" fill="#EDF4F1" stroke="#15795A" stroke-width="1.2"/>
+          <text x="794" y="72" text-anchor="middle" font-size="27" font-weight="900" fill="#0B5540">해야지</text>
+          <g text-anchor="middle" font-size="15.5" font-weight="800">
+            <rect x="552" y="92" width="484" height="40" rx="11" fill="#fff" stroke="#CFE4D9"/><text x="794" y="118" fill="#0B5540">🌤️ 날씨 · 위치 자동 수집</text>
+            <rect x="552" y="140" width="484" height="40" rx="11" fill="#fff" stroke="#CFE4D9"/><text x="794" y="166" fill="#0B5540">🤖 취향 추천 → 실재 장소</text>
+            <rect x="552" y="188" width="484" height="40" rx="11" fill="#fff" stroke="#CFE4D9"/><text x="794" y="214" fill="#0B5540">🔗 링크 하나로 시간 조율</text>
+            <rect x="552" y="236" width="484" height="40" rx="11" fill="#15795A"/><text x="794" y="262" fill="#fff">✅ 확정 → 전원 할 일 자동 생성</text>
+          </g>
+        </svg>
+      </div>
+      <div class="hint" data-r style="--i:3">앱 전환 4회 · 가능 시간은 일일이 취합 · 정하고 나서 캘린더에 다시 입력 → <b style="color:var(--green)">앱 1개 · 옮겨 적기 0번</b></div>
+    </div>
+  </section>
+
+  <!-- 5. 해결 방식 -->
+  <section class="slide" id="diff">
+    <div class="wrap">
+      <div class="secmark" data-r><span class="bn">03</span></div>
+      <div class="ey" data-r style="--i:1">Solution</div>
+      <h2 class="st" data-r style="--i:1">다섯 단계를 앱 하나에</h2>
+      <div class="hr" data-r style="--i:2"></div>
+      <div class="diagram" data-r style="--i:2;margin-bottom:20px">
+        <svg viewBox="0 0 1080 152">
+          <defs><marker id="b1" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" refX="13" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14z" fill="#8FC9AE"/></marker></defs>
+          <g text-anchor="middle">
+            <circle cx="70" cy="50" r="34" fill="#EDF4F1" stroke="#15795A" stroke-width="2"/><text x="70" y="61" font-size="26">🌤️</text>
+            <text x="70" y="112" font-size="15" font-weight="850" fill="#0B5540">날씨 · 위치</text><text x="70" y="132" font-size="12" fill="#767E86" class="m">자동 수집</text>
+
+            <circle cx="308" cy="50" r="34" fill="#F3F0F7" stroke="#6B4C8A" stroke-width="2"/><text x="308" y="61" font-size="26">🤖</text>
+            <text x="308" y="112" font-size="15" font-weight="850" fill="#553C72">취향 추천</text><text x="308" y="132" font-size="12" fill="#767E86" class="m">활동 · 검색어만</text>
+
+            <circle cx="546" cy="50" r="34" fill="#EFF3F8" stroke="#2E6BA8" stroke-width="2"/><text x="546" y="61" font-size="26">🗺️</text>
+            <text x="546" y="112" font-size="15" font-weight="850" fill="#1E4E7E">실재 장소</text><text x="546" y="132" font-size="12" fill="#767E86" class="m">지도 API가 채움</text>
+
+            <circle cx="784" cy="50" r="34" fill="#F7F2E8" stroke="#B4791F" stroke-width="2"/><text x="784" y="61" font-size="26">🗓️</text>
+            <text x="784" y="112" font-size="15" font-weight="850" fill="#8A5A12">약속 조율</text><text x="784" y="132" font-size="12" fill="#767E86" class="m">히트맵 · 확정</text>
+
+            <circle cx="1022" cy="50" r="36" fill="#15795A"/><text x="1022" y="62" font-size="28">✅</text>
+            <text x="1022" y="112" font-size="15" font-weight="850" fill="#0B5540">할 일 등록</text><text x="1022" y="132" font-size="12" fill="#767E86" class="m">참여자 전원</text>
+          </g>
+          <g stroke="#8FC9AE" stroke-width="3" fill="none" marker-end="url(#b1)">
+            <path d="M114,50 L264,50"/><path d="M352,50 L502,50"/><path d="M590,50 L740,50"/><path d="M828,50 L978,50"/>
+          </g>
+        </svg>
+      </div>
+      <div class="diagram" data-r style="--i:3">
+        <svg viewBox="0 0 1080 278">
+          <text x="16" y="20" font-size="12.5" font-weight="800" fill="#767E86" class="m">기존 서비스와의 비교</text>
+          <g font-size="13" font-weight="800" fill="#767E86" text-anchor="middle" class="m">
+            <text x="418" y="52">맥락 인식</text><text x="574" y="52">개인화</text><text x="730" y="52">실재 검증</text><text x="886" y="52">시간 조율</text><text x="1030" y="52">할 일 연결</text>
+          </g>
+          <line x1="16" y1="66" x2="1064" y2="66" stroke="#E3E7EA" stroke-width="2"/>
+          <g font-size="16" font-weight="800" fill="#4B535B">
+            <text x="20" y="100">투두 앱</text><text x="20" y="144">추천 서비스</text><text x="20" y="188">LLM 챗봇</text><text x="20" y="232">약속 조율 툴</text>
+          </g>
+          <g text-anchor="middle" font-size="19" font-weight="900">
+            <text x="418" y="100" fill="#C4CAD0">✕</text><text x="574" y="100" fill="#C4CAD0">✕</text><text x="730" y="100" fill="#C4CAD0">✕</text><text x="886" y="100" fill="#C4CAD0">✕</text><text x="1030" y="100" fill="#15795A">✓</text>
+            <text x="418" y="144" fill="#B4791F">△</text><text x="574" y="144" fill="#C4CAD0">✕</text><text x="730" y="144" fill="#15795A">✓</text><text x="886" y="144" fill="#C4CAD0">✕</text><text x="1030" y="144" fill="#C4CAD0">✕</text>
+            <text x="418" y="188" fill="#15795A">✓</text><text x="574" y="188" fill="#B4791F">△</text><text x="730" y="188" fill="#B23B32">✕</text><text x="886" y="188" fill="#C4CAD0">✕</text><text x="1030" y="188" fill="#C4CAD0">✕</text>
+            <text x="418" y="232" fill="#C4CAD0">✕</text><text x="574" y="232" fill="#C4CAD0">✕</text><text x="730" y="232" fill="#C4CAD0">✕</text><text x="886" y="232" fill="#15795A">✓</text><text x="1030" y="232" fill="#C4CAD0">✕</text>
+          </g>
+          <text x="778" y="188" font-size="12" font-weight="800" fill="#B23B32" class="m">환각</text>
+          <rect x="16" y="240" width="1048" height="34" rx="10" fill="#EDF4F1" stroke="#15795A" stroke-width="1.2"/>
+          <text x="24" y="264" font-size="16.5" font-weight="900" fill="#0B5540">해야지</text>
+          <g text-anchor="middle" font-size="19" font-weight="900" fill="#15795A">
+            <text x="418" y="264">✓</text><text x="574" y="264">✓</text><text x="730" y="264">✓</text><text x="886" y="264">✓</text><text x="1030" y="264">✓</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. 기능 구조 -->
+  <section class="slide" id="feat">
+    <div class="wrap">
+      <div class="secmark" data-r><span class="bn">04</span></div>
+      <div class="ey" data-r style="--i:1">Feature Map</div>
+      <h2 class="st" data-r style="--i:1">5개 기능군</h2>
+      <div class="hr" data-r style="--i:2"></div>
+      <div class="diagram" data-r style="--i:2">
+        <svg viewBox="0 0 1080 396">
+          <rect x="16" y="16" width="1048" height="64" rx="13" fill="#EDF4F1" stroke="#15795A" stroke-width="1.2"/>
+          <text x="40" y="55" font-size="17" font-weight="900" fill="#0B5540">1 · 날씨 기반 활동 추천</text>
+          <g font-size="13.5" font-weight="700" class="m" text-anchor="middle">
+            <rect x="312" y="32" width="172" height="32" rx="9" fill="#fff"/><text x="398" y="53" fill="#0B5540">실시간 날씨</text>
+            <rect x="500" y="32" width="172" height="32" rx="9" fill="#fff"/><text x="586" y="53" fill="#0B5540">AI 추천 챗</text>
+            <rect x="688" y="32" width="172" height="32" rx="9" fill="#fff"/><text x="774" y="53" fill="#0B5540">장소 검색</text>
+            <rect x="876" y="32" width="172" height="32" rx="9" fill="#fff"/><text x="962" y="53" fill="#0B5540">지도 · 마커</text>
+          </g>
+
+          <rect x="16" y="92" width="1048" height="64" rx="13" fill="#EFF3F8" stroke="#2E6BA8" stroke-width="1.2"/>
+          <text x="40" y="131" font-size="17" font-weight="900" fill="#1E4E7E">2 · 약속 조율</text>
+          <g font-size="13.5" font-weight="700" class="m" text-anchor="middle">
+            <rect x="312" y="108" width="172" height="32" rx="9" fill="#fff"/><text x="398" y="129" fill="#1E4E7E">초대 링크</text>
+            <rect x="500" y="108" width="172" height="32" rx="9" fill="#fff"/><text x="586" y="129" fill="#1E4E7E">가능 시간 응답</text>
+            <rect x="688" y="108" width="172" height="32" rx="9" fill="#fff"/><text x="774" y="129" fill="#1E4E7E">히트맵 · 최적 시간</text>
+            <rect x="876" y="108" width="172" height="32" rx="9" fill="#fff"/><text x="962" y="129" fill="#1E4E7E">확정 → 전원 할 일</text>
+          </g>
+
+          <rect x="16" y="168" width="1048" height="64" rx="13" fill="#F7F2E8" stroke="#B4791F" stroke-width="1.2"/>
+          <text x="40" y="207" font-size="17" font-weight="900" fill="#8A5A12">3 · 할 일 · 루틴</text>
+          <g font-size="13.5" font-weight="700" class="m" text-anchor="middle">
+            <rect x="312" y="184" width="172" height="32" rx="9" fill="#fff"/><text x="398" y="205" fill="#8A5A12">날짜별 CRUD</text>
+            <rect x="500" y="184" width="172" height="32" rx="9" fill="#fff"/><text x="586" y="205" fill="#8A5A12">핀 · 정렬 · 라벨</text>
+            <rect x="688" y="184" width="172" height="32" rx="9" fill="#fff"/><text x="774" y="205" fill="#8A5A12">요일 루틴</text>
+            <rect x="876" y="184" width="172" height="32" rx="9" fill="#fff"/><text x="962" y="205" fill="#8A5A12">자정 자동 등록</text>
+          </g>
+
+          <rect x="16" y="244" width="1048" height="64" rx="13" fill="#F3F0F7" stroke="#6B4C8A" stroke-width="1.2"/>
+          <text x="40" y="283" font-size="17" font-weight="900" fill="#553C72">4 · 인증 · 권한 · 개인화</text>
+          <g font-size="13.5" font-weight="700" class="m" text-anchor="middle">
+            <rect x="312" y="260" width="172" height="32" rx="9" fill="#fff"/><text x="398" y="281" fill="#553C72">소셜 로그인 3종</text>
+            <rect x="500" y="260" width="172" height="32" rx="9" fill="#fff"/><text x="586" y="281" fill="#553C72">토큰 자동 재발급</text>
+            <rect x="688" y="260" width="172" height="32" rx="9" fill="#fff"/><text x="774" y="281" fill="#553C72">공유 권한 3단계</text>
+            <rect x="876" y="260" width="172" height="32" rx="9" fill="#fff"/><text x="962" y="281" fill="#553C72">취향 학습</text>
+          </g>
+
+          <rect x="16" y="320" width="1048" height="64" rx="13" fill="#F5F7F8" stroke="#C4CAD0" stroke-width="2"/>
+          <text x="40" y="359" font-size="17" font-weight="900" fill="#4B535B">5 · 알림</text>
+          <g font-size="13.5" font-weight="700" class="m" text-anchor="middle">
+            <rect x="312" y="336" width="172" height="32" rx="9" fill="#fff" stroke="#E3E7EA"/><text x="398" y="357" fill="#4B535B">초대 · 확정</text>
+            <rect x="500" y="336" width="172" height="32" rx="9" fill="#fff" stroke="#E3E7EA"/><text x="586" y="357" fill="#4B535B">리마인더</text>
+            <rect x="688" y="336" width="172" height="32" rx="9" fill="#fff" stroke="#E3E7EA"/><text x="774" y="357" fill="#4B535B">날씨 경보</text>
+            <rect x="876" y="336" width="172" height="32" rx="9" fill="#fff" stroke="#E3E7EA"/><text x="962" y="357" fill="#4B535B">미읽음 뱃지</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. IA -->
+  <section class="slide" id="ia">
+    <div class="wrap">
+      <div class="secmark" data-r><span class="bn">05</span></div>
+      <div class="ey" data-r style="--i:1">Service Design</div>
+      <h2 class="st" data-r style="--i:1">화면은 세 층 — 온보딩 · 기본 화면 · 겹침 창</h2>
+      <p class="lead" data-r style="--i:2">라우터 없이 <b>상태 하나</b>로 화면을 전환한다.</p>
+      <div class="hr" data-r style="--i:2"></div>
+      <div class="diagram" data-r style="--i:2">
+        <svg viewBox="0 0 1080 358">
+          <defs><marker id="b2" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" refX="13" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14z" fill="#D9BE8A"/></marker></defs>
+
+          <text x="16" y="20" font-size="12.5" font-weight="800" fill="#B4791F" class="m">① 온보딩 — 한 번만 지나간다</text>
+          <g text-anchor="middle" font-size="14.5" font-weight="800">
+            <rect x="16" y="32" width="220" height="56" rx="12" fill="#F7F2E8" stroke="#B4791F" stroke-width="1.2"/><text x="126" y="58" fill="#8A5A12">🔑 소셜 로그인</text><text x="126" y="78" font-size="12" fill="#767E86" class="m">카카오 · 구글 · 네이버</text>
+            <rect x="292" y="32" width="220" height="56" rx="12" fill="#F7F2E8" stroke="#B4791F" stroke-width="1.2"/><text x="402" y="58" fill="#8A5A12">🏷️ 닉네임 설정</text><text x="402" y="78" font-size="12" fill="#767E86" class="m">신규 회원만</text>
+            <rect x="568" y="32" width="220" height="56" rx="12" fill="#F7F2E8" stroke="#B4791F" stroke-width="1.2"/><text x="678" y="58" fill="#8A5A12">🎯 취향 설문</text><text x="678" y="78" font-size="12" fill="#767E86" class="m">4스텝 · 스킵 가능</text>
+            <rect x="844" y="32" width="220" height="56" rx="12" fill="#15795A"/><text x="954" y="66" font-size="16" font-weight="900" fill="#fff">기본 화면 진입</text>
+          </g>
+          <g stroke="#D9BE8A" stroke-width="2.5" fill="none" marker-end="url(#b2)">
+            <path d="M242,60 L286,60"/><path d="M518,60 L562,60"/><path d="M794,60 L838,60"/>
+          </g>
+
+          <text x="16" y="122" font-size="12.5" font-weight="800" fill="#15795A" class="m">② 기본 화면 — 항상 떠 있다</text>
+          <rect x="16" y="134" width="1048" height="116" rx="14" fill="#EDF4F1" stroke="#15795A" stroke-width="1.2"/>
+          <g text-anchor="middle" font-size="15" font-weight="850">
+            <rect x="32" y="154" width="184" height="56" rx="11" fill="#fff" stroke="#15795A" stroke-width="1.2"/><text x="124" y="180" fill="#0B5540">🌤️ 홈</text><text x="124" y="199" font-size="11.5" fill="#767E86" class="m">대시보드</text>
+            <rect x="240" y="154" width="184" height="56" rx="11" fill="#fff" stroke="#CFE4D9"/><text x="332" y="180" fill="#0B5540">✅ 할 일</text><text x="332" y="199" font-size="11.5" fill="#767E86" class="m">목록 · 정렬</text>
+            <rect x="448" y="154" width="184" height="56" rx="11" fill="#fff" stroke="#CFE4D9"/><text x="540" y="180" fill="#0B5540">📅 캘린더</text><text x="540" y="199" font-size="11.5" fill="#767E86" class="m">월 단위</text>
+            <rect x="656" y="154" width="184" height="56" rx="11" fill="#fff" stroke="#CFE4D9"/><text x="748" y="180" fill="#0B5540">🗓️ 약속</text><text x="748" y="199" font-size="11.5" fill="#767E86" class="m">조율 · 확정</text>
+            <rect x="864" y="154" width="184" height="56" rx="11" fill="#fff" stroke="#CFE4D9"/><text x="956" y="180" fill="#0B5540">👤 마이페이지</text><text x="956" y="199" font-size="11.5" fill="#767E86" class="m">친구 · 취향</text>
+          </g>
+          <text x="540" y="236" text-anchor="middle" font-size="13" font-weight="700" fill="#0B5540" class="m">사이드바 ＋ 버튼은 화면에 따라 의미가 바뀐다 — 새 약속 · 친구 추가 · 일정 추가</text>
+
+          <text x="16" y="284" font-size="12.5" font-weight="800" fill="#6B4C8A" class="m">③ 겹침 창 12종 — 기본 화면 위에 뜬다</text>
+          <g text-anchor="middle" font-size="13.5" font-weight="700" class="m">
+            <rect x="16" y="296" width="158" height="32" rx="9" fill="#F3F0F7" stroke="#E3D9EE"/><text x="95" y="317" fill="#553C72">날씨 드로어</text>
+            <rect x="194" y="296" width="158" height="32" rx="9" fill="#F3F0F7" stroke="#E3D9EE"/><text x="273" y="317" fill="#553C72">AI 추천 챗</text>
+            <rect x="372" y="296" width="158" height="32" rx="9" fill="#F3F0F7" stroke="#E3D9EE"/><text x="451" y="317" fill="#553C72">할 일 추가 · 상세</text>
+            <rect x="550" y="296" width="158" height="32" rx="9" fill="#F3F0F7" stroke="#E3D9EE"/><text x="629" y="317" fill="#553C72">루틴 · 라벨</text>
+            <rect x="728" y="296" width="158" height="32" rx="9" fill="#F3F0F7" stroke="#E3D9EE"/><text x="807" y="317" fill="#553C72">지도 · 장소 상세</text>
+            <rect x="906" y="296" width="158" height="32" rx="9" fill="#F3F0F7" stroke="#E3D9EE"/><text x="985" y="317" fill="#553C72">약속 · 친구</text>
+          </g>
+          <text x="540" y="350" text-anchor="middle" font-size="12.5" font-weight="700" fill="#767E86" class="m">초대 링크로 들어오면 로그인 후 약속 화면이 자동으로 열린다</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. User Flow -->
+  <section class="slide" id="flow">
+    <div class="wrap">
+      <div class="ey" data-r>Service Design · User Flow</div>
+      <h2 class="st" data-r style="--i:1">유저 플로우 — 5개 영역</h2>
+      <div class="hr" data-r style="--i:2"></div>
+      <div class="diagram" data-r style="--i:2;padding:14px 16px">
+        <svg viewBox="0 0 1352 652" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="fa" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" refX="6.5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7z" fill="#B6BDC4"/></marker></defs>
+        <rect x="8" y="14" width="1336" height="58" rx="10" fill="#F5F7F8"/>
+        <rect x="8" y="14" width="3.5" height="58" rx="1.8" fill="#7A838C"/>
+        <text x="26" y="47.5" font-size="13" font-weight="800" fill="#7A838C" font-family="Pretendard,system-ui,sans-serif">인증 · 온보딩</text>
+        <rect x="8" y="82" width="1336" height="126" rx="10" fill="#FAFBFC"/>
+        <rect x="8" y="82" width="3.5" height="126" rx="1.8" fill="#15795A"/>
+        <text x="26" y="149.5" font-size="13" font-weight="800" fill="#15795A" font-family="Pretendard,system-ui,sans-serif">홈 · 활동 추천</text>
+        <rect x="8" y="218" width="1336" height="126" rx="10" fill="#F5F7F8"/>
+        <rect x="8" y="218" width="3.5" height="126" rx="1.8" fill="#B4791F"/>
+        <text x="26" y="285.5" font-size="13" font-weight="800" fill="#B4791F" font-family="Pretendard,system-ui,sans-serif">할 일 · 루틴</text>
+        <rect x="8" y="354" width="1336" height="126" rx="10" fill="#FAFBFC"/>
+        <rect x="8" y="354" width="3.5" height="126" rx="1.8" fill="#2E6BA8"/>
+        <text x="26" y="421.5" font-size="13" font-weight="800" fill="#2E6BA8" font-family="Pretendard,system-ui,sans-serif">약속 조율</text>
+        <rect x="8" y="490" width="1336" height="126" rx="10" fill="#F5F7F8"/>
+        <rect x="8" y="490" width="3.5" height="126" rx="1.8" fill="#6B4C8A"/>
+        <text x="26" y="557.5" font-size="13" font-weight="800" fill="#6B4C8A" font-family="Pretendard,system-ui,sans-serif">알림 · 프로필</text>
+        <path d="M 170 107.0 H 152 V 515.0 " fill="none" stroke="#C4CAD0" stroke-width="1.2" stroke-dasharray="4 3"/>
+        <path d="M 152 243.0 H 171" fill="none" stroke="#C4CAD0" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#fa)"/>
+        <path d="M 152 277.0 H 171" fill="none" stroke="#C4CAD0" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#fa)"/>
+        <path d="M 152 311.0 H 171" fill="none" stroke="#C4CAD0" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#fa)"/>
+        <path d="M 152 379.0 H 171" fill="none" stroke="#C4CAD0" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#fa)"/>
+        <path d="M 152 515.0 H 171" fill="none" stroke="#C4CAD0" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#fa)"/>
+        <path d="M 152 549.0 H 171" fill="none" stroke="#C4CAD0" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#fa)"/>
+        <text x="146" y="96.0" font-size="10.5" font-weight="700" fill="#A2A9B1" text-anchor="end" font-family="Pretendard,system-ui,sans-serif">사이드바</text>
+        <path d="M 358 39.0 H 367" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 554 39.0 H 563" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 750 39.0 H 759" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 946 39.0 H 955" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 1049.0 55.0 V 73.0 H 265.0 V 90.0" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 265.0 123.0 V 141.0 H 367" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 554 141.0 H 563" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 358 107.0 H 367" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 554 107.0 H 563" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 750 107.0 H 759" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 946 107.0 H 955" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 1142 107.0 H 1151" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 1049.0 120.0 V 162.0" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 358 243.0 H 367" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 554 243.0 H 563" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 750 243.0 H 759" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 946 243.0 H 955" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 358 277.0 H 367" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 554 277.0 H 563" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 358 311.0 H 367" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 554 311.0 H 563" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 750 311.0 H 759" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 946 311.0 H 955" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 358 379.0 H 367" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 554 379.0 H 563" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 750 379.0 H 759" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 358 413.0 H 367" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 554 413.0 H 563" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 750 413.0 H 759" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 853.0 426.0 V 434.0" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 946 447.0 H 955" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 1142 447.0 H 1151" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 358 515.0 H 367" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 554 515.0 H 563" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 358 549.0 H 367" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 554 549.0 H 563" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 265.0 565.0 V 583.0 H 367" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <path d="M 554 583.0 H 563" fill="none" stroke="#C4CAD0" stroke-width="1.2" marker-end="url(#fa)"/>
+        <rect x="176" y="26" width="178" height="26" rx="7" fill="#EDF0F2" stroke="#D6DBE0" stroke-width="1"/>
+        <text x="265.0" y="43" font-size="12" font-weight="600" fill="#767E86" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">앱 시작</text>
+        <rect x="372" y="26" width="178" height="26" rx="7" fill="#FFFFFF" stroke="#DDE2E6" stroke-width="1"/>
+        <text x="461.0" y="43" font-size="12" font-weight="700" fill="#4B535B" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">로그인 화면</text>
+        <rect x="568" y="26" width="178" height="26" rx="7" fill="#2F3438" stroke="#2F3438" stroke-width="1"/>
+        <text x="657.0" y="43" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">소셜 로그인</text>
+        <rect x="764" y="26" width="178" height="26" rx="7" fill="#FFFFFF" stroke="#DDE2E6" stroke-width="1"/>
+        <text x="853.0" y="43" font-size="12" font-weight="700" fill="#4B535B" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">닉네임 설정</text>
+        <rect x="960" y="26" width="178" height="26" rx="7" fill="#FFFFFF" stroke="#DDE2E6" stroke-width="1"/>
+        <text x="1049.0" y="43" font-size="12" font-weight="700" fill="#4B535B" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">취향 설문</text>
+        <rect x="176" y="94" width="178" height="26" rx="7" fill="#E4EFE9" stroke="#C3DCD0" stroke-width="1"/>
+        <text x="265.0" y="111" font-size="12" font-weight="800" fill="#0B5540" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">홈 대시보드</text>
+        <rect x="372" y="128" width="178" height="26" rx="7" fill="#FFFFFF" stroke="#DDE2E6" stroke-width="1"/>
+        <text x="461.0" y="145" font-size="12" font-weight="700" fill="#4B535B" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">날씨 드로어</text>
+        <rect x="568" y="128" width="178" height="26" rx="7" fill="#FFFFFF" stroke="#DDE2E6" stroke-width="1"/>
+        <text x="657.0" y="145" font-size="12" font-weight="700" fill="#4B535B" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">시간별 · 주간 예보</text>
+        <rect x="372" y="94" width="178" height="26" rx="7" fill="#FFFFFF" stroke="#DDE2E6" stroke-width="1"/>
+        <text x="461.0" y="111" font-size="12" font-weight="700" fill="#4B535B" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">AI 추천 챗</text>
+        <rect x="568" y="94" width="178" height="26" rx="7" fill="#2F3438" stroke="#2F3438" stroke-width="1"/>
+        <text x="657.0" y="111" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">카테고리 선택</text>
+        <rect x="764" y="94" width="178" height="26" rx="7" fill="#FFFFFF" stroke="#DDE2E6" stroke-width="1"/>
+        <text x="853.0" y="111" font-size="12" font-weight="700" fill="#4B535B" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">장소 카드</text>
+        <rect x="960" y="94" width="178" height="26" rx="7" fill="#FFFFFF" stroke="#DDE2E6" stroke-width="1"/>
+        <text x="1049.0" y="111" font-size="12" font-weight="700" fill="#4B535B" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">지도 · 장소 상세</text>
+        <rect x="1156" y="94" width="178" height="26" rx="7" fill="#2F3438" stroke="#2F3438" stroke-width="1"/>
+        <text x="1245.0" y="111" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">할 일 목록에 추가</text>
+        <rect x="960" y="162" width="178" height="26" rx="7" fill="#2F3438" stroke="#2F3438" stroke-width="1"/>
+        <text x="1049.0" y="179" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">약속 조율로 이동</text>
+        <rect x="176" y="230" width="178" height="26" rx="7" fill="#E4EFE9" stroke="#C3DCD0" stroke-width="1"/>
+        <text x="265.0" y="247" font-size="12" font-weight="800" fill="#0B5540" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">할 일 목록</text>
+        <rect x="372" y="230" width="178" height="26" rx="7" fill="#FFFFFF" stroke="#DDE2E6" stroke-width="1"/>
+        <text x="461.0" y="247" font-size="12" font-weight="700" fill="#4B535B" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">할 일 추가</text>
+        <rect x="568" y="230" width="178" height="26" rx="7" fill="#FFFFFF" stroke="#DDE2E6" stroke-width="1"/>
+        <text x="657.0" y="247" font-size="12" font-weight="700" fill="#4B535B" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">할 일 상세</text>
+        <rect x="764" y="230" width="178" height="26" rx="7" fill="#2F3438" stroke="#2F3438" stroke-width="1"/>
+        <text x="853.0" y="247" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">라벨 지정</text>
+        <rect x="960" y="230" width="178" height="26" rx="7" fill="#2F3438" stroke="#2F3438" stroke-width="1"/>
+        <text x="1049.0" y="247" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">완료 · 핀 · 정렬</text>
+        <rect x="176" y="264" width="178" height="26" rx="7" fill="#E4EFE9" stroke="#C3DCD0" stroke-width="1"/>
+        <text x="265.0" y="281" font-size="12" font-weight="800" fill="#0B5540" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">캘린더</text>
+        <rect x="372" y="264" width="178" height="26" rx="7" fill="#FFFFFF" stroke="#DDE2E6" stroke-width="1"/>
+        <text x="461.0" y="281" font-size="12" font-weight="700" fill="#4B535B" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">월 달력</text>
+        <rect x="568" y="264" width="178" height="26" rx="7" fill="#2F3438" stroke="#2F3438" stroke-width="1"/>
+        <text x="657.0" y="281" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">날짜 선택</text>
+        <rect x="176" y="298" width="178" height="26" rx="7" fill="#E4EFE9" stroke="#C3DCD0" stroke-width="1"/>
+        <text x="265.0" y="315" font-size="12" font-weight="800" fill="#0B5540" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">루틴 드로어</text>
+        <rect x="372" y="298" width="178" height="26" rx="7" fill="#FFFFFF" stroke="#DDE2E6" stroke-width="1"/>
+        <text x="461.0" y="315" font-size="12" font-weight="700" fill="#4B535B" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">루틴 폼</text>
+        <rect x="568" y="298" width="178" height="26" rx="7" fill="#2F3438" stroke="#2F3438" stroke-width="1"/>
+        <text x="657.0" y="315" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">요일 규칙</text>
+        <rect x="764" y="298" width="178" height="26" rx="7" fill="#2F3438" stroke="#2F3438" stroke-width="1"/>
+        <text x="853.0" y="315" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">일괄 등록</text>
+        <rect x="960" y="298" width="178" height="26" rx="7" fill="#FFFFFF" stroke="#DDE2E6" stroke-width="1"/>
+        <text x="1049.0" y="315" font-size="12" font-weight="700" fill="#4B535B" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">자정 자동 생성</text>
+        <rect x="176" y="366" width="178" height="26" rx="7" fill="#E4EFE9" stroke="#C3DCD0" stroke-width="1"/>
+        <text x="265.0" y="383" font-size="12" font-weight="800" fill="#0B5540" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">약속 목록</text>
+        <rect x="372" y="366" width="178" height="26" rx="7" fill="#FFFFFF" stroke="#DDE2E6" stroke-width="1"/>
+        <text x="461.0" y="383" font-size="12" font-weight="700" fill="#4B535B" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">약속 만들기</text>
+        <rect x="568" y="366" width="178" height="26" rx="7" fill="#2F3438" stroke="#2F3438" stroke-width="1"/>
+        <text x="657.0" y="383" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">후보 날짜 · 시간</text>
+        <rect x="764" y="366" width="178" height="26" rx="7" fill="#2F3438" stroke="#2F3438" stroke-width="1"/>
+        <text x="853.0" y="383" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">초대 링크 복사</text>
+        <rect x="176" y="400" width="178" height="26" rx="7" fill="#EDF0F2" stroke="#D6DBE0" stroke-width="1"/>
+        <text x="265.0" y="417" font-size="12" font-weight="600" fill="#767E86" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">초대 링크 진입</text>
+        <rect x="372" y="400" width="178" height="26" rx="7" fill="#2F3438" stroke="#2F3438" stroke-width="1"/>
+        <text x="461.0" y="417" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">로그인 · 참여 등록</text>
+        <rect x="568" y="400" width="178" height="26" rx="7" fill="#FFFFFF" stroke="#DDE2E6" stroke-width="1"/>
+        <text x="657.0" y="417" font-size="12" font-weight="700" fill="#4B535B" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">가능 시간 그리드</text>
+        <rect x="764" y="400" width="178" height="26" rx="7" fill="#2F3438" stroke="#2F3438" stroke-width="1"/>
+        <text x="853.0" y="417" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">가능 시간 제출</text>
+        <rect x="764" y="434" width="178" height="26" rx="7" fill="#FFFFFF" stroke="#DDE2E6" stroke-width="1"/>
+        <text x="853.0" y="451" font-size="12" font-weight="700" fill="#4B535B" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">히트맵 · 최적 시간</text>
+        <rect x="960" y="434" width="178" height="26" rx="7" fill="#2F3438" stroke="#2F3438" stroke-width="1"/>
+        <text x="1049.0" y="451" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">생성자 확정</text>
+        <rect x="1156" y="434" width="178" height="26" rx="7" fill="#FFFFFF" stroke="#DDE2E6" stroke-width="1"/>
+        <text x="1245.0" y="451" font-size="12" font-weight="700" fill="#4B535B" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">전원 할 일 생성</text>
+        <rect x="176" y="502" width="178" height="26" rx="7" fill="#E4EFE9" stroke="#C3DCD0" stroke-width="1"/>
+        <text x="265.0" y="519" font-size="12" font-weight="800" fill="#0B5540" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">알림 벨</text>
+        <rect x="372" y="502" width="178" height="26" rx="7" fill="#FFFFFF" stroke="#DDE2E6" stroke-width="1"/>
+        <text x="461.0" y="519" font-size="12" font-weight="700" fill="#4B535B" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">알림 목록</text>
+        <rect x="568" y="502" width="178" height="26" rx="7" fill="#2F3438" stroke="#2F3438" stroke-width="1"/>
+        <text x="657.0" y="519" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">대상 화면 이동</text>
+        <rect x="176" y="536" width="178" height="26" rx="7" fill="#E4EFE9" stroke="#C3DCD0" stroke-width="1"/>
+        <text x="265.0" y="553" font-size="12" font-weight="800" fill="#0B5540" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">마이페이지</text>
+        <rect x="372" y="536" width="178" height="26" rx="7" fill="#FFFFFF" stroke="#DDE2E6" stroke-width="1"/>
+        <text x="461.0" y="553" font-size="12" font-weight="700" fill="#4B535B" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">친구 검색</text>
+        <rect x="568" y="536" width="178" height="26" rx="7" fill="#2F3438" stroke="#2F3438" stroke-width="1"/>
+        <text x="657.0" y="553" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">친구 요청 · 수락</text>
+        <rect x="372" y="570" width="178" height="26" rx="7" fill="#FFFFFF" stroke="#DDE2E6" stroke-width="1"/>
+        <text x="461.0" y="587" font-size="12" font-weight="700" fill="#4B535B" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">취향 재설정</text>
+        <rect x="568" y="570" width="178" height="26" rx="7" fill="#2F3438" stroke="#2F3438" stroke-width="1"/>
+        <text x="657.0" y="587" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle" font-family="Pretendard,system-ui,sans-serif">로그아웃</text>
+        <rect x="8" y="635" width="18" height="13" rx="4" fill="#EDF0F2" stroke="#D6DBE0" stroke-width="1"/>
+        <text x="32" y="645.5" font-size="10.5" font-weight="700" fill="#767E86" font-family="Pretendard,system-ui,sans-serif">시작·진입</text>
+        <rect x="93" y="635" width="18" height="13" rx="4" fill="#E4EFE9" stroke="#C3DCD0" stroke-width="1"/>
+        <text x="117" y="645.5" font-size="10.5" font-weight="700" fill="#767E86" font-family="Pretendard,system-ui,sans-serif">메인 화면</text>
+        <rect x="178" y="635" width="18" height="13" rx="4" fill="#FFFFFF" stroke="#DDE2E6" stroke-width="1"/>
+        <text x="202" y="645.5" font-size="10.5" font-weight="700" fill="#767E86" font-family="Pretendard,system-ui,sans-serif">하위 화면</text>
+        <rect x="263" y="635" width="18" height="13" rx="4" fill="#2F3438" stroke="#2F3438" stroke-width="1"/>
+        <text x="287" y="645.5" font-size="10.5" font-weight="700" fill="#767E86" font-family="Pretendard,system-ui,sans-serif">액션</text>
+        <text x="1344" y="645.5" font-size="10.5" font-weight="700" fill="#A2A9B1" text-anchor="end" font-family="Pretendard,system-ui,sans-serif">점선 = 사이드바로 이동</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. Architecture -->
+  <section class="slide" id="arch">
+    <div class="wrap">
+      <div class="ey" data-r>06 · System Design</div>
+      <h2 class="st" data-r style="--i:1">시스템 아키텍처</h2>
+      <div class="hr" data-r style="--i:2"></div>
+      <div class="imgframe" data-r style="--i:2">
+        <img src="haeyaji-system-architecture.png" alt="시스템 아키텍처 다이어그램" onclick="window.open(this.src)">
+      </div>
+      <p class="hint" data-r style="--i:3">외부 API 키는 백엔드만 갖는다 · AI 서비스는 상태를 두지 않아 모델 교체가 자유롭다 · 기상청 숫자 코드는 백엔드가 한 형태로 다듬어 내린다</p>
+    </div>
+  </section>
+
+  <!-- 10. 기술 스택 -->
+  <section class="slide" id="stack">
+    <div class="wrap">
+      <div class="ey" data-r>System Design · Tech Stack</div>
+      <h2 class="st" data-r style="--i:1">기술 스택</h2>
+      <div class="hr" data-r style="--i:2"></div>
+      <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+        <symbol id="i-react" viewBox="0 0 24 24"><path fill="#61DAFB" d="M14.23 12.004a2.236 2.236 0 0 1-2.235 2.236 2.236 2.236 0 0 1-2.236-2.236 2.236 2.236 0 0 1 2.235-2.236 2.236 2.236 0 0 1 2.236 2.236zm2.648-10.69c-1.346 0-3.107.96-4.888 2.622-1.78-1.653-3.542-2.602-4.887-2.602-.41 0-.783.093-1.106.278-1.375.793-1.683 3.264-.973 6.365C1.98 8.917 0 10.42 0 12.004c0 1.59 1.99 3.097 5.043 4.03-.704 3.113-.39 5.588.988 6.38.32.187.69.275 1.102.275 1.345 0 3.107-.96 4.888-2.624 1.78 1.654 3.542 2.603 4.887 2.603.41 0 .783-.09 1.106-.275 1.374-.792 1.683-3.263.973-6.365C22.02 15.096 24 13.59 24 12.004c0-1.59-1.99-3.097-5.043-4.032.704-3.11.39-5.587-.988-6.38-.318-.184-.688-.277-1.092-.278zm-.005 1.09v.006c.225 0 .406.044.558.127.666.382.955 1.835.73 3.704-.054.46-.142.945-.25 1.44-.96-.236-2.006-.417-3.107-.534-.66-.905-1.345-1.727-2.035-2.447 1.592-1.48 3.087-2.292 4.105-2.295zm-9.77.02c1.012 0 2.514.808 4.11 2.28-.686.72-1.37 1.537-2.02 2.442-1.107.117-2.154.298-3.113.538-.112-.49-.195-.964-.254-1.42-.23-1.868.054-3.32.714-3.707.19-.09.4-.127.563-.132zm4.882 3.05c.455.468.91.992 1.36 1.564-.44-.02-.89-.034-1.345-.034-.46 0-.915.01-1.36.034.44-.572.895-1.096 1.345-1.565zM12 8.1c.74 0 1.477.034 2.202.093.406.582.802 1.203 1.183 1.86.372.64.71 1.29 1.018 1.946-.308.655-.646 1.31-1.013 1.95-.38.66-.773 1.288-1.18 1.87-.728.063-1.466.098-2.21.098-.74 0-1.477-.035-2.202-.093-.406-.582-.802-1.204-1.183-1.86-.372-.64-.71-1.29-1.018-1.946.303-.657.646-1.313 1.013-1.954.38-.66.773-1.286 1.18-1.868.728-.064 1.466-.098 2.21-.098zm-3.635.254c-.24.377-.48.763-.704 1.16-.225.39-.435.782-.635 1.174-.265-.656-.49-1.31-.676-1.947.64-.15 1.315-.283 2.015-.386zm7.26 0c.695.103 1.365.23 2.006.387-.18.632-.405 1.282-.66 1.933-.2-.39-.41-.783-.64-1.174-.225-.392-.465-.774-.705-1.146zm3.063.675c.484.15.944.317 1.375.498 1.732.74 2.852 1.708 2.852 2.476-.005.768-1.125 1.74-2.857 2.475-.42.18-.88.342-1.355.493-.28-.958-.646-1.956-1.1-2.98.45-1.017.81-2.01 1.085-2.964zm-13.395.004c.278.96.645 1.957 1.1 2.98-.45 1.017-.812 2.01-1.086 2.964-.484-.15-.944-.318-1.37-.5-1.732-.737-2.852-1.706-2.852-2.474 0-.768 1.12-1.742 2.852-2.476.42-.18.88-.342 1.356-.494zm11.678 4.28c.265.657.49 1.312.676 1.948-.64.157-1.316.29-2.016.39.24-.375.48-.762.705-1.158.225-.39.435-.788.636-1.18zm-9.945.02c.2.392.41.783.64 1.175.23.39.465.772.705 1.143-.695-.102-1.365-.23-2.006-.386.18-.63.406-1.282.66-1.933zM17.92 16.32c.112.493.2.968.254 1.423.23 1.868-.054 3.32-.714 3.708-.147.09-.338.128-.563.128-1.012 0-2.514-.807-4.11-2.28.686-.72 1.37-1.536 2.02-2.44 1.107-.118 2.154-.3 3.113-.54zm-11.83.01c.96.234 2.006.415 3.107.532.66.905 1.345 1.727 2.035 2.446-1.595 1.483-3.092 2.295-4.11 2.295-.22-.005-.406-.05-.553-.132-.666-.38-.955-1.834-.73-3.703.054-.46.142-.944.25-1.438zm4.56.64c.44.02.89.034 1.345.034.46 0 .915-.01 1.36-.034-.44.572-.895 1.095-1.345 1.565-.455-.47-.91-.993-1.36-1.565z"/></symbol>
+        <symbol id="i-vite" viewBox="0 0 24 24"><path fill="#8B5CF6" d="M13.056 23.238a.57.57 0 0 1-1.02-.355v-5.202c0-.63-.512-1.143-1.144-1.143H5.148a.57.57 0 0 1-.464-.903l3.777-5.29c.54-.753 0-1.804-.93-1.804H.57a.574.574 0 0 1-.543-.746.6.6 0 0 1 .08-.157L5.008.78a.57.57 0 0 1 .467-.24h14.589a.57.57 0 0 1 .466.903l-3.778 5.29c-.54.755 0 1.806.93 1.806h5.745c.238 0 .424.138.513.322a.56.56 0 0 1-.063.603z"/></symbol>
+        <symbol id="i-ts" viewBox="0 0 24 24"><path fill="#3178C6" d="M1.125 0C.502 0 0 .502 0 1.125v21.75C0 23.498.502 24 1.125 24h21.75c.623 0 1.125-.502 1.125-1.125V1.125C24 .502 23.498 0 22.875 0zm17.363 9.75c.612 0 1.154.037 1.627.111a6.38 6.38 0 0 1 1.306.34v2.458a3.95 3.95 0 0 0-.643-.361 5.093 5.093 0 0 0-.717-.26 5.453 5.453 0 0 0-1.426-.2c-.3 0-.573.028-.819.086a2.1 2.1 0 0 0-.623.242c-.17.104-.3.229-.393.374a.888.888 0 0 0-.14.49c0 .196.053.373.156.529.104.156.252.304.443.444s.423.276.696.41c.273.135.582.274.926.416.47.197.892.407 1.266.628.374.222.695.473.963.753.268.279.472.598.614.957.142.359.214.776.214 1.253 0 .657-.125 1.21-.373 1.656a3.033 3.033 0 0 1-1.012 1.085 4.38 4.38 0 0 1-1.487.596c-.566.12-1.163.18-1.79.18a9.916 9.916 0 0 1-1.84-.164 5.544 5.544 0 0 1-1.512-.493v-2.63a5.033 5.033 0 0 0 3.237 1.2c.333 0 .624-.03.872-.09.249-.06.456-.144.623-.25.166-.108.29-.234.373-.38a1.023 1.023 0 0 0-.074-1.089 2.12 2.12 0 0 0-.537-.5 5.597 5.597 0 0 0-.807-.444 27.72 27.72 0 0 0-1.007-.436c-.918-.383-1.602-.852-2.053-1.405-.45-.553-.676-1.222-.676-2.005 0-.614.123-1.141.369-1.582.246-.441.58-.804 1.004-1.089a4.494 4.494 0 0 1 1.47-.629 7.536 7.536 0 0 1 1.77-.201zm-15.113.188h9.563v2.166H9.506v9.646H6.789v-9.646H3.375z"/></symbol>
+        <symbol id="i-tw" viewBox="0 0 24 24"><path fill="#06B6D4" d="M12.001,4.8c-3.2,0-5.2,1.6-6,4.8c1.2-1.6,2.6-2.2,4.2-1.8c0.913,0.228,1.565,0.89,2.288,1.624 C13.666,10.618,15.027,12,18.001,12c3.2,0,5.2-1.6,6-4.8c-1.2,1.6-2.6,2.2-4.2,1.8c-0.913-0.228-1.565-0.89-2.288-1.624 C16.337,6.182,14.976,4.8,12.001,4.8z M6.001,12c-3.2,0-5.2,1.6-6,4.8c1.2-1.6,2.6-2.2,4.2-1.8c0.913,0.228,1.565,0.89,2.288,1.624 c1.177,1.194,2.538,2.576,5.512,2.576c3.2,0,5.2-1.6,6-4.8c-1.2,1.6-2.6,2.2-4.2,1.8c-0.913-0.228-1.565-0.89-2.288-1.624 C10.337,13.382,8.976,12,6.001,12z"/></symbol>
+        <symbol id="i-axios" viewBox="0 0 24 24"><path fill="#5A29E4" d="M11.0683 2.89968V22.2973l-2.11399 1.70265V7.8638H4.975l6.0933-4.96412zM14.93426 0v15.76724H19.025l-6.20044 5.08865V1.4689L14.93426 0z"/></symbol>
+        <symbol id="i-spring" viewBox="0 0 24 24"><path fill="#6DB33F" d="m23.693 10.7058-4.73-8.1844c-.4094-.7106-1.4166-1.2942-2.2402-1.2942H7.2725c-.819 0-1.8308.5836-2.2402 1.2942L.307 10.7058c-.4095.7106-.4095 1.873 0 2.5837l4.7252 8.189c.4094.7107 1.4166 1.2943 2.2402 1.2943h9.455c.819 0 1.826-.5836 2.2402-1.2942l4.7252-8.189c.4095-.7107.4095-1.8732 0-2.5838zM10.9763 5.7547c0-.5365.4377-.9742.9742-.9742s.9742.4377.9742.9742v5.8217c0 .5366-.4377.9742-.9742.9742s-.9742-.4376-.9742-.9742zm.9742 12.4294c-3.6427 0-6.6077-2.965-6.6077-6.6077.0047-2.0896.993-4.0521 2.6685-5.304a.8657.8657 0 0 1 1.2142.1788.8657.8657 0 0 1-.1788 1.2143c-2.1602 1.6048-2.612 4.6592-1.0072 6.8194 1.6049 2.1603 4.6593 2.612 6.8195 1.0072 1.2378-.9177 1.9673-2.372 1.9673-3.9157a4.8972 4.8972 0 0 0-1.9861-3.925c-.386-.2824-.466-.8284-.1836-1.2143.2824-.386.8283-.466 1.2143-.1835 1.6895 1.2471 2.6826 3.2238 2.6873 5.3228 0 3.6474-2.965 6.6077-6.6077 6.6077z"/></symbol>
+        <symbol id="i-sec" viewBox="0 0 24 24"><path fill="#6DB33F" d="M20.59 2.066 11.993 0 3.41 2.066v6.612h4.557a3.804 3.804 0 0 0 0 .954H3.41v3.106C3.41 19.867 11.994 24 11.994 24s8.582-4.133 8.582-11.258V9.635h-4.545a3.616 3.616 0 0 0 0-.954h4.558zM12 12.262h-.006a3.109 3.109 0 1 1 .006 0zm-.006-4.579a.804.804 0 0 0-.37 1.52v.208l.238.237v.159l.159.159v.159l-.14.14.15.246v.159l-.16.189.223.222.246-.246V9.218a.804.804 0 0 0-.346-1.535zm0 .836a.299.299 0 1 1 .298-.299.299.299 0 0 1-.298.3z"/></symbol>
+        <symbol id="i-java" viewBox="0 0 24 24"><path fill="#2F3438" d="M11.915 0 11.7.215C9.515 2.4 7.47 6.39 6.046 10.483c-1.064 1.024-3.633 2.81-3.711 3.551-.093.87 1.746 2.611 1.55 3.235-.198.625-1.304 1.408-1.014 1.939.1.188.823.011 1.277-.491a13.389 13.389 0 0 0-.017 2.14c.076.906.27 1.668.643 2.232.372.563.956.911 1.667.911.397 0 .727-.114 1.024-.264.298-.149.571-.33.91-.5.68-.34 1.634-.666 3.53-.604 1.903.062 2.872.39 3.559.704.687.314 1.15.664 1.925.664.767 0 1.395-.336 1.807-.9.412-.563.631-1.33.72-2.24.06-.623.055-1.32 0-2.066.454.45 1.117.604 1.213.424.29-.53-.816-1.314-1.013-1.937-.198-.624 1.642-2.366 1.549-3.236-.08-.748-2.707-2.568-3.748-3.586C16.428 6.374 14.308 2.394 12.13.215zm.175 6.038a2.95 2.95 0 0 1 2.943 2.942 2.95 2.95 0 0 1-2.943 2.943A2.95 2.95 0 0 1 9.148 8.98a2.95 2.95 0 0 1 2.942-2.942zM8.685 7.983a3.515 3.515 0 0 0-.145.997c0 1.951 1.6 3.55 3.55 3.55 1.95 0 3.55-1.598 3.55-3.55 0-.329-.046-.648-.132-.951.334.095.64.208.915.336a42.699 42.699 0 0 1 2.042 5.829c.678 2.545 1.01 4.92.846 6.607-.082.844-.29 1.51-.606 1.94-.315.431-.713.651-1.315.651-.593 0-.932-.27-1.673-.61-.741-.338-1.825-.694-3.792-.758-1.974-.064-3.073.293-3.821.669-.375.188-.659.373-.911.5s-.466.2-.752.2c-.53 0-.876-.209-1.16-.64-.285-.43-.474-1.101-.545-1.948-.141-1.693.176-4.069.823-6.614a43.155 43.155 0 0 1 1.934-5.783c.348-.167.749-.31 1.192-.425zm-3.382 4.362a.216.216 0 0 1 .13.031c-.166.56-.323 1.116-.463 1.665a33.849 33.849 0 0 0-.547 2.555 3.9 3.9 0 0 0-.2-.39c-.58-1.012-.914-1.642-1.16-2.08.315-.24 1.679-1.755 2.24-1.781zm13.394.01c.562.027 1.926 1.543 2.24 1.783-.246.438-.58 1.068-1.16 2.08a4.428 4.428 0 0 0-.163.309 32.354 32.354 0 0 0-.562-2.49 40.579 40.579 0 0 0-.482-1.652.216.216 0 0 1 .127-.03z"/></symbol>
+        <symbol id="i-jwt" viewBox="0 0 24 24"><path fill="#2F3438" d="M10.2 0v6.456L12 8.928l1.8-2.472V0zm3.6 6.456v3.072l2.904-.96L20.52 3.36l-2.928-2.136zm2.904 2.112l-1.8 2.496 2.928.936 6.144-1.992-1.128-3.432zM17.832 12l-2.928.936 1.8 2.496 6.144 1.992 1.128-3.432zm-1.128 3.432l-2.904-.96v3.072l3.792 5.232 2.928-2.136zM13.8 17.544L12 15.072l-1.8 2.472V24h3.6zm-3.6 0v-3.072l-2.904.96L3.48 20.64l2.928 2.136zm-2.904-2.112l1.8-2.496L6.168 12 .024 13.992l1.128 3.432zM6.168 12l2.928-.936-1.8-2.496-6.144-1.992-1.128 3.432zm1.128-3.432l2.904.96V6.456L6.408 1.224 3.48 3.36Z"/></symbol>
+        <symbol id="i-fastapi" viewBox="0 0 24 24"><path fill="#009688" d="M12 .0387C5.3729.0384.0003 5.3931 0 11.9988c-.001 6.6066 5.372 11.9628 12 11.9625 6.628.0003 12.001-5.3559 12-11.9625-.0003-6.6057-5.3729-11.9604-12-11.96m-.829 5.4153h7.55l-7.5805 5.3284h5.1828L5.279 18.5436q2.9466-6.5444 5.892-13.0896"/></symbol>
+        <symbol id="i-ollama" viewBox="0 0 24 24"><path fill="#2F3438" d="M16.361 10.26a.894.894 0 0 0-.558.47l-.072.148.001.207c0 .193.004.217.059.353.076.193.152.312.291.448.24.238.51.3.872.205a.86.86 0 0 0 .517-.436.752.752 0 0 0 .08-.498c-.064-.453-.33-.782-.724-.897a1.06 1.06 0 0 0-.466 0zm-9.203.005c-.305.096-.533.32-.65.639a1.187 1.187 0 0 0-.06.52c.057.309.31.59.598.667.362.095.632.033.872-.205.14-.136.215-.255.291-.448.055-.136.059-.16.059-.353l.001-.207-.072-.148a.894.894 0 0 0-.565-.472 1.02 1.02 0 0 0-.474.007Zm4.184 2c-.131.071-.223.25-.195.383.031.143.157.288.353.407.105.063.112.072.117.136.004.038-.01.146-.029.243-.02.094-.036.194-.036.222.002.074.07.195.143.253.064.052.076.054.255.059.164.005.198.001.264-.03.169-.082.212-.234.15-.525-.052-.243-.042-.28.087-.355.137-.08.281-.219.324-.314a.365.365 0 0 0-.175-.48.394.394 0 0 0-.181-.033c-.126 0-.207.03-.355.124l-.085.053-.053-.032c-.219-.13-.259-.145-.391-.143a.396.396 0 0 0-.193.032zm.39-2.195c-.373.036-.475.05-.654.086-.291.06-.68.195-.951.328-.94.46-1.589 1.226-1.787 2.114-.04.176-.045.234-.045.53 0 .294.005.357.043.524.264 1.16 1.332 2.017 2.714 2.173.3.033 1.596.033 1.896 0 1.11-.125 2.064-.727 2.493-1.571.114-.226.169-.372.22-.602.039-.167.044-.23.044-.523 0-.297-.005-.355-.045-.531-.288-1.29-1.539-2.304-3.072-2.497a6.873 6.873 0 0 0-.855-.031zm.645.937a3.283 3.283 0 0 1 1.44.514c.223.148.537.458.671.662.166.251.26.508.303.82.02.143.01.251-.043.482-.08.345-.332.705-.672.957a3.115 3.115 0 0 1-.689.348c-.382.122-.632.144-1.525.138-.582-.006-.686-.01-.853-.042-.57-.107-1.022-.334-1.35-.68-.264-.28-.385-.535-.45-.946-.03-.192.025-.509.137-.776.136-.326.488-.73.836-.963.403-.269.934-.46 1.422-.512.187-.02.586-.02.773-.002zm-5.503-11a1.653 1.653 0 0 0-.683.298C5.617.74 5.173 1.666 4.985 2.819c-.07.436-.119 1.04-.119 1.503 0 .544.064 1.24.155 1.721.02.107.031.202.023.208a8.12 8.12 0 0 1-.187.152 5.324 5.324 0 0 0-.949 1.02 5.49 5.49 0 0 0-.94 2.339 6.625 6.625 0 0 0-.023 1.357c.091.78.325 1.438.727 2.04l.13.195-.037.064c-.269.452-.498 1.105-.605 1.732-.084.496-.095.629-.095 1.294 0 .67.009.803.088 1.266.095.555.288 1.143.503 1.534.071.128.243.393.264.407.007.003-.014.067-.046.141a7.405 7.405 0 0 0-.548 1.873c-.062.417-.071.552-.071.991 0 .56.031.832.148 1.279L3.42 24h1.478l-.05-.091c-.297-.552-.325-1.575-.068-2.597.117-.472.25-.819.498-1.296l.148-.29v-.177c0-.165-.003-.184-.057-.293a.915.915 0 0 0-.194-.25 1.74 1.74 0 0 1-.385-.543c-.424-.92-.506-2.286-.208-3.451.124-.486.329-.918.544-1.154a.787.787 0 0 0 .223-.531c0-.195-.07-.355-.224-.522a3.136 3.136 0 0 1-.817-1.729c-.14-.96.114-2.005.69-2.834.563-.814 1.353-1.336 2.237-1.475.199-.033.57-.028.776.01.226.04.367.028.512-.041.179-.085.268-.19.374-.431.093-.215.165-.333.36-.576.234-.29.46-.489.822-.729.413-.27.884-.467 1.352-.561.17-.035.25-.04.569-.04.319 0 .398.005.569.04a4.07 4.07 0 0 1 1.914.997c.117.109.398.457.488.602.034.057.095.177.132.267.105.241.195.346.374.43.14.068.286.082.503.045.343-.058.607-.053.943.016 1.144.23 2.14 1.173 2.581 2.437.385 1.108.276 2.267-.296 3.153-.097.15-.193.27-.333.419-.301.322-.301.722-.001 1.053.493.539.801 1.866.708 3.036-.062.772-.26 1.463-.533 1.854a2.096 2.096 0 0 1-.224.258.916.916 0 0 0-.194.25c-.054.109-.057.128-.057.293v.178l.148.29c.248.476.38.823.498 1.295.253 1.008.231 2.01-.059 2.581a.845.845 0 0 0-.044.098c0 .006.329.009.732.009h.73l.02-.074.036-.134c.019-.076.057-.3.088-.516.029-.217.029-1.016 0-1.258-.11-.875-.295-1.57-.597-2.226-.032-.074-.053-.138-.046-.141.008-.005.057-.074.108-.152.376-.569.607-1.284.724-2.228.031-.26.031-1.378 0-1.628-.083-.645-.182-1.082-.348-1.525a6.083 6.083 0 0 0-.329-.7l-.038-.064.131-.194c.402-.604.636-1.262.727-2.04a6.625 6.625 0 0 0-.024-1.358 5.512 5.512 0 0 0-.939-2.339 5.325 5.325 0 0 0-.95-1.02 8.097 8.097 0 0 1-.186-.152.692.692 0 0 1 .023-.208c.208-1.087.201-2.443-.017-3.503-.19-.924-.535-1.658-.98-2.082-.354-.338-.716-.482-1.15-.455-.996.059-1.8 1.205-2.116 3.01a6.805 6.805 0 0 0-.097.726c0 .036-.007.066-.015.066a.96.96 0 0 1-.149-.078A4.857 4.857 0 0 0 12 3.03c-.832 0-1.687.243-2.456.698a.958.958 0 0 1-.148.078c-.008 0-.015-.03-.015-.066a6.71 6.71 0 0 0-.097-.725C8.997 1.392 8.337.319 7.46.048a2.096 2.096 0 0 0-.585-.041Zm.293 1.402c.248.197.523.759.682 1.388.03.113.06.244.069.292.007.047.026.152.041.233.067.365.098.76.102 1.24l.002.475-.12.175-.118.178h-.278c-.324 0-.646.041-.954.124l-.238.06c-.033.007-.038-.003-.057-.144a8.438 8.438 0 0 1 .016-2.323c.124-.788.413-1.501.696-1.711.067-.05.079-.049.157.013zm9.825-.012c.17.126.358.46.498.888.28.854.36 2.028.212 3.145-.019.14-.024.151-.057.144l-.238-.06a3.693 3.693 0 0 0-.954-.124h-.278l-.119-.178-.119-.175.002-.474c.004-.669.066-1.19.214-1.772.157-.623.434-1.185.68-1.382.078-.062.09-.063.159-.012z"/></symbol>
+        <symbol id="i-mysql" viewBox="0 0 24 24"><g fill="none" stroke="#4479A1" stroke-width="1.8"><ellipse cx="12" cy="5.8" rx="7" ry="2.8"/><path d="M5 5.8v12.4c0 1.55 3.13 2.8 7 2.8s7-1.25 7-2.8V5.8"/><path d="M5 12c0 1.55 3.13 2.8 7 2.8s7-1.25 7-2.8"/></g></symbol>
+        <symbol id="i-redis" viewBox="0 0 24 24"><path fill="#D64134" d="M22.71 13.145c-1.66 2.092-3.452 4.483-7.038 4.483-3.203 0-4.397-2.825-4.48-5.12.701 1.484 2.073 2.685 4.214 2.63 4.117-.133 6.94-3.852 6.94-7.239 0-4.05-3.022-6.972-8.268-6.972-3.752 0-8.4 1.428-11.455 3.685C2.59 6.937 3.885 9.958 4.35 9.626c2.648-1.904 4.748-3.13 6.784-3.744C8.12 9.244.886 17.05 0 18.425c.1 1.261 1.66 4.648 2.424 4.648.232 0 .431-.133.664-.365a100.49 100.49 0 0 0 5.54-6.765c.222 3.104 1.748 6.898 6.014 6.898 3.819 0 7.604-2.756 9.33-8.965.2-.764-.73-1.361-1.261-.73zm-4.349-5.013c0 1.959-1.926 2.922-3.685 2.922-.941 0-1.664-.247-2.235-.568 1.051-1.592 2.092-3.225 3.21-4.973 1.972.334 2.71 1.43 2.71 2.619z"/></symbol>
+        <symbol id="i-docker" viewBox="0 0 24 24"><path fill="#2496ED" d="M13.983 11.078h2.119a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.119a.185.185 0 00-.185.185v1.888c0 .102.083.185.185.185m-2.954-5.43h2.118a.186.186 0 00.186-.186V3.574a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.185m0 2.716h2.118a.187.187 0 00.186-.186V6.29a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.887c0 .102.082.185.185.186m-2.93 0h2.12a.186.186 0 00.184-.186V6.29a.185.185 0 00-.185-.185H8.1a.185.185 0 00-.185.185v1.887c0 .102.083.185.185.186m-2.964 0h2.119a.186.186 0 00.185-.186V6.29a.185.185 0 00-.185-.185H5.136a.186.186 0 00-.186.185v1.887c0 .102.084.185.186.186m5.893 2.715h2.118a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.185m-2.93 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186h-2.12a.185.185 0 00-.184.185v1.888c0 .102.083.185.185.185m-2.964 0h2.119a.185.185 0 00.185-.185V9.006a.185.185 0 00-.184-.186h-2.12a.186.186 0 00-.186.186v1.887c0 .102.084.185.186.185m-2.92 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186h-2.12a.185.185 0 00-.184.185v1.888c0 .102.082.185.185.185M23.763 9.89c-.065-.051-.672-.51-1.954-.51-.338.001-.676.03-1.01.087-.248-1.7-1.653-2.53-1.716-2.566l-.344-.199-.226.327c-.284.438-.49.922-.612 1.43-.23.97-.09 1.882.403 2.661-.595.332-1.55.413-1.744.42H.751a.751.751 0 00-.75.748 11.376 11.376 0 00.692 4.062c.545 1.428 1.355 2.48 2.41 3.124 1.18.723 3.1 1.137 5.275 1.137.983.003 1.963-.086 2.93-.266a12.248 12.248 0 003.823-1.389c.98-.567 1.86-1.288 2.61-2.136 1.252-1.418 1.998-2.997 2.553-4.4h.221c1.372 0 2.215-.549 2.68-1.009.309-.293.55-.65.707-1.046l.098-.288Z"/></symbol>
+        <symbol id="i-github" viewBox="0 0 24 24"><path fill="#24292F" d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></symbol>
+        <symbol id="i-kakao" viewBox="0 0 24 24"><rect width="24" height="24" rx="6" fill="#FEE500"/><g transform="translate(3.6 3.6) scale(0.7)"><path fill="#3A1D1D" d="M22.125 0H1.875C.8394 0 0 .8394 0 1.875v20.25C0 23.1606.8394 24 1.875 24h20.25C23.1606 24 24 23.1606 24 22.125V1.875C24 .8394 23.1606 0 22.125 0zM12 18.75c-.591 0-1.1697-.0413-1.7317-.1209-.5626.3965-3.813 2.6797-4.1198 2.7225 0 0-.1258.0489-.2328-.0141s-.0876-.2282-.0876-.2282c.0322-.2198.8426-3.0183.992-3.5333-2.7452-1.36-4.5701-3.7686-4.5701-6.5135C2.25 6.8168 6.6152 3.375 12 3.375s9.75 3.4418 9.75 7.6875c0 4.2457-4.3652 7.6875-9.75 7.6875zM8.0496 9.8672h-.8777v3.3417c0 .2963-.2523.5372-.5625.5372s-.5625-.2409-.5625-.5372V9.8672h-.8777c-.3044 0-.552-.2471-.552-.5508s.2477-.5508.552-.5508h2.8804c.3044 0 .552.2471.552.5508s-.2477.5508-.552.5508zm10.9879 2.9566a.558.558 0 0 1 .108.4167.5588.5588 0 0 1-.2183.371.5572.5572 0 0 1-.3383.1135.558.558 0 0 1-.4493-.2236l-1.3192-1.7479-.1952.1952v1.2273a.5635.5635 0 0 1-.5627.5628.563.563 0 0 1-.5625-.5625V9.3281c0-.3102.2523-.5625.5625-.5625s.5625.2523.5625.5625v1.209l1.5694-1.5694c.0807-.0807.1916-.1252.312-.1252.1404 0 .2814.0606.3871.1661.0985.0984.1573.2251.1654.3566.0082.1327-.036.2542-.1241.3425l-1.2818 1.2817 1.3845 1.8344zm-8.3502-3.5023c-.095-.2699-.3829-.5475-.7503-.5557-.3663.0083-.6542.2858-.749.5551l-1.3455 3.5415c-.1708.5305-.0217.7272.1333.7988a.8568.8568 0 0 0 .3576.0776c.2346 0 .4139-.0952.4678-.2481l.2787-.7297 1.7152.0001.2785.7292c.0541.1532.2335.2484.4681.2484a.8601.8601 0 0 0 .3576-.0775c.1551-.0713.3041-.2681.1329-.7999l-1.3449-3.5398zm-1.3116 2.4433l.5618-1.5961.5618 1.5961H9.3757zm5.9056 1.3836c0 .2843-.2418.5156-.5391.5156h-1.8047c-.2973 0-.5391-.2314-.5391-.5156V9.3281c0-.3102.2576-.5625.5742-.5625s.5742.2523.5742.5625v3.3047h1.1953c.2974 0 .5392.2314.5392.5156z"/></g></symbol>
+        <symbol id="i-zustand" viewBox="0 0 24 24"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5" fill="none" stroke="#7A838C" stroke-width="1.6"/><circle cx="9" cy="10" r="2" fill="#7A838C"/><circle cx="15" cy="10" r="2" fill="#7A838C"/><path d="M8.6 15.4c1.9 1.5 4.9 1.5 6.8 0" fill="none" stroke="#7A838C" stroke-width="1.6" stroke-linecap="round"/></symbol>
+        <symbol id="i-db" viewBox="0 0 24 24"><g fill="none" stroke="#7A838C" stroke-width="1.7"><ellipse cx="12" cy="5.8" rx="7" ry="2.8"/><path d="M5 5.8v12.4c0 1.55 3.13 2.8 7 2.8s7-1.25 7-2.8V5.8"/><path d="M5 12c0 1.55 3.13 2.8 7 2.8s7-1.25 7-2.8"/></g></symbol>
+        <symbol id="i-web" viewBox="0 0 24 24"><g fill="none" stroke="#7A838C" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.9 3 2.9 15 0 18M12 3c-2.9 3-2.9 15 0 18"/></g></symbol>
+        <symbol id="i-chip" viewBox="0 0 24 24"><rect x="6.6" y="6.6" width="10.8" height="10.8" rx="2.2" fill="none" stroke="#7A838C" stroke-width="1.7"/><rect x="9.9" y="9.9" width="4.2" height="4.2" rx="1" fill="#7A838C"/><g stroke="#7A838C" stroke-width="1.5" stroke-linecap="round"><path d="M9.6 6.6V3.8M14.4 6.6V3.8M9.6 20.2v-2.8M14.4 20.2v-2.8M6.6 9.6H3.8M6.6 14.4H3.8M20.2 9.6h-2.8M20.2 14.4h-2.8"/></g></symbol>
+      </defs></svg>
+      <div class="grid4">
+        <div class="card" data-r style="--i:2"><div class="ch" style="color:var(--green)">Frontend</div><div class="tech">
+          <span class="t"><svg><use href="#i-react"/></svg>React <small>18</small></span>
+          <span class="t"><svg><use href="#i-vite"/></svg>Vite <small>5</small></span>
+          <span class="t"><svg><use href="#i-ts"/></svg>TypeScript</span>
+          <span class="t"><svg><use href="#i-zustand"/></svg>Zustand</span>
+          <span class="t"><svg><use href="#i-tw"/></svg>Tailwind</span>
+          <span class="t"><svg><use href="#i-axios"/></svg>Axios</span>
+          <span class="t"><svg><use href="#i-kakao"/></svg>Kakao Maps</span>
+        </div></div>
+        <div class="card" data-r style="--i:3"><div class="ch" style="color:var(--blue)">Backend</div><div class="tech">
+          <span class="t"><svg><use href="#i-spring"/></svg>Spring Boot <small>4</small></span>
+          <span class="t"><svg><use href="#i-java"/></svg>Java <small>21</small></span>
+          <span class="t"><svg><use href="#i-sec"/></svg>Security · OAuth2</span>
+          <span class="t"><svg><use href="#i-db"/></svg>Data JPA</span>
+          <span class="t"><svg><use href="#i-web"/></svg>WebClient</span>
+          <span class="t"><svg><use href="#i-jwt"/></svg>JWT</span>
+        </div></div>
+        <div class="card" data-r style="--i:4"><div class="ch" style="color:var(--violet)">NLP</div><div class="tech">
+          <span class="t"><svg><use href="#i-fastapi"/></svg>FastAPI</span>
+          <span class="t"><svg><use href="#i-chip"/></svg>EXAONE 3.5 <small>7.8B</small></span>
+          <span class="t"><svg><use href="#i-ollama"/></svg>Ollama</span>
+        </div></div>
+        <div class="card" data-r style="--i:5"><div class="ch" style="color:var(--gold)">Data · Infra</div><div class="tech">
+          <span class="t"><svg><use href="#i-mysql"/></svg>MySQL <small>8</small></span>
+          <span class="t"><svg><use href="#i-redis"/></svg>Redis <small>7</small></span>
+          <span class="t"><svg><use href="#i-docker"/></svg>Docker Compose</span>
+          <span class="t"><svg><use href="#i-github"/></svg>GitHub</span>
+        </div></div>
+      </div>
+      <div class="grid3" data-r style="--i:6;margin-top:20px">
+        <div class="card"><div class="ch">Zustand</div><div class="cd">설정 코드 없이 <b>도메인별로 상태를 쪼갤 수 있다.</b></div></div>
+        <div class="card"><div class="ch">Redis</div><div class="cd">만료를 따로 관리할 일이 없다. <b>TTL만 걸어두면</b> 알아서 사라진다.</div></div>
+        <div class="card"><div class="ch">UUID 기본키</div><div class="cd">약속 링크에 id가 그대로 들어간다. <b>번호를 세어 남의 약속을 열 수 없어야</b> 했다.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11. 데이터 모델 -->
+  <section class="slide" id="erd">
+    <div class="wrap">
+      <div class="ey" data-r>System Design · Data Model</div>
+      <h2 class="st" data-r style="--i:1">데이터 모델 — 16 테이블 · 4 그룹</h2>
+      <div class="hr" data-r style="--i:2"></div>
+      <div class="imgframe" data-r style="--i:2">
+        <img src="haeyaji-erd.png" alt="ERD" onclick="window.open(this.src)">
+      </div>
+      <div class="grid4" data-r style="--i:3;margin-top:14px">
+        <div class="gcard" style="border-left-color:var(--green)"><div class="gt">회원 · 개인화</div><div class="gl">member · preference · category/keyword 가중치</div></div>
+        <div class="gcard" style="border-left-color:var(--gold)"><div class="gt">할 일 · 루틴</div><div class="gl">todo · participant · routine · day · label</div></div>
+        <div class="gcard" style="border-left-color:var(--blue)"><div class="gt">약속</div><div class="gl">meeting · date · time_slot · response · participant</div></div>
+        <div class="gcard" style="border-left-color:var(--violet)"><div class="gt">친구 · 알림</div><div class="gl">friend · notification</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12. 추천 엔진 -->
+  <section class="slide" id="nlp">
+    <div class="wrap">
+      <div class="secmark" data-r><span class="bn">07</span></div>
+      <div class="ey" data-r style="--i:1">Engine 1 · 추천</div>
+      <h2 class="st" data-r style="--i:1">LLM에게 “장소”를 묻지 않는다</h2>
+      <p class="lead" data-r style="--i:2">“없는 가게를 말하지 마”라고 적어봤지만 소용없었다. 그래서 <b>물어보는 항목 자체를 바꿨다.</b></p>
+      <div class="hr" data-r style="--i:2"></div>
+      <div class="diagram" data-r style="--i:2;margin-bottom:20px">
+        <svg viewBox="0 0 1080 168">
+          <defs><marker id="d1" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" refX="13" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14z" fill="#AEB5BC"/></marker></defs>
+          <g text-anchor="middle">
+            <rect x="16" y="20" width="214" height="82" rx="13" fill="#F1F3F5" stroke="#D6DBE0"/>
+            <text x="123" y="52" font-size="15" font-weight="850" fill="#4B535B">사용자 질문</text>
+            <text x="123" y="78" font-size="13" fill="#767E86" class="m">“비 오는데 뭐하지”</text>
+
+            <rect x="294" y="20" width="214" height="82" rx="13" fill="#F3F0F7" stroke="#6B4C8A" stroke-width="1.2"/>
+            <text x="401" y="48" font-size="15" font-weight="850" fill="#553C72">LLM</text>
+            <text x="401" y="72" font-size="13" font-weight="700" fill="#553C72" class="m">활동 · 검색어까지만</text>
+            <text x="401" y="92" font-size="12" fill="#8B6BAA" class="m">“실내놀이” → “방탈출”</text>
+
+            <rect x="572" y="20" width="214" height="82" rx="13" fill="#EFF3F8" stroke="#2E6BA8" stroke-width="1.2"/>
+            <text x="679" y="48" font-size="15" font-weight="850" fill="#1E4E7E">지도 API 검색</text>
+            <text x="679" y="72" font-size="13" font-weight="700" fill="#1E4E7E" class="m">반경 2km 도보권</text>
+            <text x="679" y="92" font-size="12" fill="#5580A8" class="m">실제로 존재하는 곳만</text>
+
+            <rect x="850" y="20" width="214" height="82" rx="13" fill="#EDF4F1" stroke="#15795A" stroke-width="1.2"/>
+            <text x="957" y="48" font-size="15" font-weight="850" fill="#0B5540">장소 카드</text>
+            <text x="957" y="72" font-size="13" font-weight="700" fill="#0B5540" class="m">좌표 · 상세 링크</text>
+            <text x="957" y="92" font-size="12" fill="#5E8A78" class="m">결과가 없으면 장소 없는 활동</text>
+          </g>
+          <g stroke="#AEB5BC" stroke-width="2.5" fill="none" marker-end="url(#d1)">
+            <path d="M240,61 L284,61"/><path d="M518,61 L562,61"/><path d="M796,61 L840,61"/>
+          </g>
+          <rect x="470" y="124" width="140" height="32" rx="16" fill="#B23B32"/>
+          <text x="540" y="146" text-anchor="middle" font-size="13.5" font-weight="800" fill="#fff">🛡 차단선</text>
+          <text x="632" y="146" font-size="12.5" font-weight="700" fill="#B23B32" class="m">LLM이 상호명을 말해도 채택하지 않는다</text>
+        </svg>
+      </div>
+      <div class="diagram" data-r style="--i:3">
+        <svg viewBox="0 0 1080 132">
+          <defs><marker id="d2" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" refX="13" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14z" fill="#AEB5BC"/></marker></defs>
+          <text x="16" y="20" font-size="12.5" font-weight="800" fill="#767E86" class="m">2단계 좁히기 — 1단계 선택이 곧 개인화 학습 이벤트</text>
+          <g text-anchor="middle" font-size="13.5" font-weight="800">
+            <rect x="16" y="34" width="128" height="34" rx="10" fill="#16191E"/><text x="80" y="56" fill="#8FD8BA" class="m">① 카테고리</text>
+            <rect x="160" y="34" width="98" height="34" rx="10" fill="#F3F0F7" stroke="#E3D9EE"/><text x="209" y="56" fill="#553C72">☕ 카페</text>
+            <rect x="274" y="34" width="98" height="34" rx="10" fill="#F3F0F7" stroke="#E3D9EE"/><text x="323" y="56" fill="#553C72">🎨 전시</text>
+            <rect x="388" y="34" width="118" height="34" rx="10" fill="#6B4C8A"/><text x="447" y="56" fill="#fff">🎮 실내놀이</text>
+          </g>
+          <path d="M522,51 L566,51" stroke="#AEB5BC" stroke-width="2.5" fill="none" marker-end="url(#d2)"/>
+          <g text-anchor="middle" font-size="13.5" font-weight="800">
+            <rect x="580" y="34" width="128" height="34" rx="10" fill="#16191E"/><text x="644" y="56" fill="#8FD8BA" class="m">② 장소 카드</text>
+            <rect x="724" y="34" width="158" height="34" rx="10" fill="#EDF4F1" stroke="#15795A"/><text x="803" y="56" fill="#0B5540">키이스케이프</text>
+            <rect x="898" y="34" width="166" height="34" rx="10" fill="#EDF4F1" stroke="#15795A"/><text x="981" y="56" fill="#0B5540">보드게임카페</text>
+          </g>
+          <text x="80" y="96" text-anchor="middle" font-size="12.5" font-weight="800" fill="#767E86" class="m">학습 신호 →</text>
+          <text x="209" y="96" text-anchor="middle" font-size="14" font-weight="900" fill="#B23B32" class="m">−0.05</text>
+          <text x="323" y="96" text-anchor="middle" font-size="14" font-weight="900" fill="#B23B32" class="m">−0.05</text>
+          <text x="447" y="96" text-anchor="middle" font-size="14" font-weight="900" fill="#15795A" class="m">+2.0</text>
+          <text x="16" y="122" font-size="12.5" font-weight="700" fill="#A2A9B1" class="m">한 번에 장소부터 제시하면 빗나갈 확률이 크고, 무엇보다 “고른 행위”가 학습 신호로 남지 않는다</text>
+        </svg>
+      </div>
+      <div class="grid3" data-r style="--i:4;margin-top:18px">
+        <div class="card"><div class="ch">⏱️ 시간 계산은 서버가</div><div class="cd">“다음 일정까지 220분”을 서버가 계산해 넘긴다. <b>그 안에 끝나는 활동</b>만 올라온다.</div></div>
+        <div class="card"><div class="ch">📋 액션은 “제안”일 뿐</div><div class="cd">일정 생성을 제안해도 <b>사용자 확인 없이는 저장되지 않는다.</b></div></div>
+        <div class="card"><div class="ch">💸 호출 절약</div><div class="cd">지도를 움직인다고 다시 찾지 않는다. <b>검색어를 바꿨을 때만</b> 호출한다.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 13. 개인화 -->
+  <section class="slide" id="perso">
+    <div class="wrap">
+      <div class="ey" data-r>Engine 2 · 개인화</div>
+      <h2 class="st" data-r style="--i:1">취향 학습 — 시간대별로 따로 쌓는다</h2>
+      <p class="lead" data-r style="--i:2">가입 설문은 첫 화면을 채우는 용도다. <b>같은 사람도 아침에 고르는 것과 저녁에 고르는 것이 달랐다.</b></p>
+      <div class="hr" data-r style="--i:2"></div>
+      <div class="two">
+        <div class="diagram" data-r style="--i:2">
+          <svg viewBox="0 0 520 300">
+            <defs><marker id="e1" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" refX="13" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14z" fill="#AEB5BC"/></marker></defs>
+            <text x="14" y="20" font-size="12.5" font-weight="800" fill="#767E86" class="m">학습 흐름</text>
+            <g text-anchor="middle">
+              <rect x="14" y="32" width="492" height="52" rx="12" fill="#F7F2E8" stroke="#B4791F" stroke-width="1.2"/>
+              <text x="260" y="56" font-size="15" font-weight="850" fill="#8A5A12">가입 설문 — 선호 · 회피 · 분위기 · 강도</text>
+              <text x="260" y="76" font-size="12.5" fill="#767E86" class="m">스킵해도 추천은 정상 동작한다</text>
+            </g>
+            <path d="M260,88 L260,128" stroke="#AEB5BC" stroke-width="2.5" fill="none" marker-end="url(#e1)"/>
+            <g text-anchor="middle">
+              <rect x="14" y="132" width="240" height="60" rx="12" fill="#EDF4F1" stroke="#15795A" stroke-width="1.2"/>
+              <text x="134" y="157" font-size="14.5" font-weight="850" fill="#0B5540">고른 카테고리</text>
+              <text x="134" y="181" font-size="20" font-weight="900" fill="#15795A" class="m">+2.0</text>
+
+              <rect x="266" y="132" width="240" height="60" rx="12" fill="#F8EFEC" stroke="#B23B32" stroke-width="1.2"/>
+              <text x="386" y="157" font-size="14.5" font-weight="850" fill="#B23B32">함께 떴지만 안 고름</text>
+              <text x="386" y="181" font-size="20" font-weight="900" fill="#B23B32" class="m">−0.05</text>
+            </g>
+            <path d="M260,196 L260,236" stroke="#AEB5BC" stroke-width="2.5" fill="none" marker-end="url(#e1)"/>
+            <g text-anchor="middle">
+              <rect x="14" y="240" width="492" height="52" rx="12" fill="#16191E"/>
+              <text x="260" y="264" font-size="14.5" font-weight="850" fill="#8FD8BA">주 1회 × 0.9 감쇠</text>
+              <text x="260" y="284" font-size="12.5" fill="#9db6ab" class="m">옛 취향은 서서히 잊는다 — 최근 행동이 항상 더 무겁다</text>
+            </g>
+          </svg>
+        </div>
+        <div class="diagram" data-r style="--i:3">
+          <svg viewBox="0 0 520 300">
+            <text x="14" y="20" font-size="12.5" font-weight="800" fill="#767E86" class="m">누적 결과 — 시간대 × 카테고리 가중치</text>
+            <g font-size="13" class="m" text-anchor="middle" fill="#767E86" font-weight="700">
+              <text x="212" y="52">아침</text><text x="302" y="52">오후</text><text x="392" y="52">저녁</text><text x="482" y="52">밤</text>
+            </g>
+            <g font-size="14" class="m" text-anchor="end" fill="#4B535B" font-weight="700">
+              <text x="150" y="86">카페</text><text x="150" y="140">운동</text><text x="150" y="194">전시</text>
+            </g>
+            <g text-anchor="middle" font-size="14" font-weight="800">
+              <rect x="168" y="64" width="80" height="34" rx="8" fill="#15795A"/><text x="208" y="86" fill="#fff">6.0</text>
+              <rect x="258" y="64" width="80" height="34" rx="8" fill="#57B48C"/><text x="298" y="86" fill="#fff">4.0</text>
+              <rect x="348" y="64" width="80" height="34" rx="8" fill="#DCEAE3"/><text x="388" y="86" fill="#2E7d5c">1.9</text>
+              <rect x="438" y="64" width="80" height="34" rx="8" fill="#EDF4F1"/><text x="478" y="86" fill="#2E7d5c">0</text>
+
+              <rect x="168" y="118" width="80" height="34" rx="8" fill="#57B48C"/><text x="208" y="140" fill="#fff">4.0</text>
+              <rect x="258" y="118" width="80" height="34" rx="8" fill="#EDF4F1"/><text x="298" y="140" fill="#2E7d5c">0</text>
+              <rect x="348" y="118" width="80" height="34" rx="8" fill="#12664A"/><text x="388" y="140" fill="#fff">8.0</text>
+              <rect x="438" y="118" width="80" height="34" rx="8" fill="#DCEAE3"/><text x="478" y="140" fill="#2E7d5c">2.0</text>
+
+              <rect x="168" y="172" width="80" height="34" rx="8" fill="#EDF4F1"/><text x="208" y="194" fill="#2E7d5c">0</text>
+              <rect x="258" y="172" width="80" height="34" rx="8" fill="#DCEAE3"/><text x="298" y="194" fill="#2E7d5c">2.0</text>
+              <rect x="348" y="172" width="80" height="34" rx="8" fill="#57B48C"/><text x="388" y="194" fill="#fff">4.0</text>
+              <rect x="438" y="172" width="80" height="34" rx="8" fill="#D2E6DB"/><text x="478" y="194" fill="#2E7d5c">−0.1</text>
+            </g>
+            <rect x="343" y="113" width="90" height="44" rx="10" fill="none" stroke="#C08B36" stroke-width="2"/>
+            <text x="388" y="228" text-anchor="middle" font-size="13" font-weight="800" fill="#8A5A12" class="m">저녁엔 운동을 먼저 제안한다</text>
+            <rect x="14" y="248" width="492" height="44" rx="11" fill="#F5F7F8" stroke="#E3E7EA"/>
+            <text x="260" y="266" text-anchor="middle" font-size="13" font-weight="800" fill="#14171A">지금 맥락에 데이터가 없으면 전체 상위로, 그것도 없으면 설문 값으로</text>
+            <text x="260" y="284" text-anchor="middle" font-size="12.5" fill="#767E86" class="m">신규 사용자도 추천이 비어 보이는 순간이 없다</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 14. 약속 -->
+  <section class="slide" id="meet-eng">
+    <div class="wrap">
+      <div class="ey" data-r>Engine 3 · 약속 조율</div>
+      <h2 class="st" data-r style="--i:1">약속 조율 — 시간을 슬롯으로 쪼갠다</h2>
+      <div class="hr" data-r style="--i:2"></div>
+      <div class="diagram" data-r style="--i:2;margin-bottom:20px">
+        <svg viewBox="0 0 1080 108">
+          <defs><marker id="f1" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" refX="13" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14z" fill="#AEB5BC"/></marker></defs>
+          <g text-anchor="middle">
+            <rect x="16" y="20" width="164" height="64" rx="12" fill="#F1F3F5" stroke="#D6DBE0"/>
+            <text x="98" y="48" font-size="14.5" font-weight="850" fill="#4B535B">후보 4일</text>
+            <text x="98" y="70" font-size="12.5" fill="#767E86" class="m">18–22시</text>
+
+            <rect x="236" y="20" width="164" height="64" rx="12" fill="#EFF3F8" stroke="#2E6BA8" stroke-width="1.2"/>
+            <text x="318" y="48" font-size="14.5" font-weight="850" fill="#1E4E7E">슬롯 16칸</text>
+            <text x="318" y="70" font-size="12.5" fill="#5580A8" class="m">30/60분 단위</text>
+
+            <rect x="456" y="20" width="164" height="64" rx="12" fill="#F3F0F7" stroke="#6B4C8A" stroke-width="1.2"/>
+            <text x="538" y="48" font-size="14.5" font-weight="850" fill="#553C72">참여자 응답</text>
+            <text x="538" y="70" font-size="12.5" fill="#8B6BAA" class="m">가능 / 불가</text>
+
+            <rect x="676" y="20" width="164" height="64" rx="12" fill="#EDF4F1" stroke="#15795A" stroke-width="1.2"/>
+            <text x="758" y="48" font-size="14.5" font-weight="850" fill="#0B5540">집계</text>
+            <text x="758" y="70" font-size="12.5" fill="#5E8A78" class="m">슬롯별 가능 인원</text>
+
+            <rect x="896" y="20" width="168" height="64" rx="12" fill="#15795A"/>
+            <text x="980" y="48" font-size="14.5" font-weight="850" fill="#fff">최적 구간 확정</text>
+            <text x="980" y="70" font-size="12.5" fill="#BFE7D5" class="m">전원 할 일 생성</text>
+          </g>
+          <g stroke="#AEB5BC" stroke-width="2.5" fill="none" marker-end="url(#f1)">
+            <path d="M186,52 L230,52"/><path d="M406,52 L450,52"/><path d="M626,52 L670,52"/><path d="M846,52 L890,52"/>
+          </g>
+        </svg>
+      </div>
+      <div class="two rev">
+        <div class="diagram" data-r style="--i:3">
+          <svg viewBox="0 0 460 300">
+            <text x="14" y="20" font-size="12.5" font-weight="800" fill="#767E86" class="m">가능 인원 히트맵 — 진하면 많이 겹침</text>
+            <g font-size="13" font-weight="700" fill="#767E86" text-anchor="middle" class="m">
+              <text x="139" y="50">토</text><text x="223" y="50">일</text><text x="307" y="50">월</text><text x="391" y="50">화</text>
+            </g>
+            <g font-size="13" fill="#767E86" text-anchor="end" class="m">
+              <text x="88" y="82">18시</text><text x="88" y="126">19시</text><text x="88" y="170">20시</text><text x="88" y="214">21시</text>
+            </g>
+            <g font-weight="800" text-anchor="middle" font-size="15" fill="#fff">
+              <rect x="102" y="60" width="74" height="30" rx="7" fill="#DCEAE3"/><text x="139" y="81" fill="#2E7d5c">2</text>
+              <rect x="186" y="60" width="74" height="30" rx="7" fill="#57B48C"/><text x="223" y="81">4</text>
+              <rect x="270" y="60" width="74" height="30" rx="7" fill="#15795A"/><text x="307" y="81">5</text>
+              <rect x="354" y="60" width="74" height="30" rx="7" fill="#D2E6DB"/><text x="391" y="81" fill="#2E7d5c">1</text>
+
+              <rect x="102" y="104" width="74" height="30" rx="7" fill="#57B48C"/><text x="139" y="125">4</text>
+              <rect x="186" y="104" width="74" height="30" rx="7" fill="#12664A"/><text x="223" y="125">6</text>
+              <rect x="270" y="104" width="74" height="30" rx="7" fill="#15795A"/><text x="307" y="125">5</text>
+              <rect x="354" y="104" width="74" height="30" rx="7" fill="#DCEAE3"/><text x="391" y="125" fill="#2E7d5c">2</text>
+
+              <rect x="102" y="148" width="74" height="30" rx="7" fill="#D2E6DB"/><text x="139" y="169" fill="#2E7d5c">1</text>
+              <rect x="186" y="148" width="74" height="30" rx="7" fill="#12664A"/><text x="223" y="169">6</text>
+              <rect x="270" y="148" width="74" height="30" rx="7" fill="#57B48C"/><text x="307" y="169">4</text>
+              <rect x="354" y="148" width="74" height="30" rx="7" fill="#EDF4F1"/><text x="391" y="169" fill="#2E7d5c">0</text>
+
+              <rect x="102" y="192" width="74" height="30" rx="7" fill="#EDF4F1"/><text x="139" y="213" fill="#2E7d5c">0</text>
+              <rect x="186" y="192" width="74" height="30" rx="7" fill="#DCEAE3"/><text x="223" y="213" fill="#2E7d5c">2</text>
+              <rect x="270" y="192" width="74" height="30" rx="7" fill="#D2E6DB"/><text x="307" y="213" fill="#2E7d5c">1</text>
+              <rect x="354" y="192" width="74" height="30" rx="7" fill="#EDF4F1"/><text x="391" y="213" fill="#2E7d5c">0</text>
+            </g>
+            <rect x="182" y="100" width="82" height="82" rx="9" fill="none" stroke="#C08B36" stroke-width="2"/>
+            <rect x="14" y="244" width="432" height="48" rx="11" fill="#F7F2E8" stroke="#B4791F"/>
+            <text x="230" y="266" text-anchor="middle" font-size="14" font-weight="850" fill="#8A5A12">단일 슬롯이 아니라 연속 구간을 제안</text>
+            <text x="230" y="285" text-anchor="middle" font-size="13" font-weight="700" fill="#8A5A12" class="m">“일 19시 6명” ✕ → “일 19–21시 6명” ✓</text>
+          </svg>
+        </div>
+        <div class="grid2">
+          <div class="card" data-r style="--i:4"><div class="ch">🔗 초대 링크</div><div class="cd">링크는 난수라 찍어서 맞힐 수 없다. 링크가 있어도 <b>로그인하고 참여 등록</b>을 해야 응답할 수 있다.</div></div>
+          <div class="card" data-r style="--i:5"><div class="ch">✏️ 응답 전체 교체</div><div class="cd">고친 칸만 보내지 않고 <b>“내 가능한 시간” 전체</b>를 매번 다시 보낸다. 그래서 지운 칸이 남지 않는다.</div></div>
+          <div class="card" data-r style="--i:6"><div class="ch">✅ 확정 3중 검증</div><div class="cd">생성자인가 · 시간 단위에 맞는가 · <b>구간의 모든 슬롯이 실제 후보인가.</b></div></div>
+          <div class="card" data-r style="--i:7"><div class="ch">📨 알림은 이벤트로</div><div class="cd">알림 생성이 실패해도 <b>약속 확정은 취소되지 않는다.</b></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 15. 날씨 -->
+  <section class="slide" id="wthr">
+    <div class="wrap">
+      <div class="ey" data-r>Engine 4 · 날씨</div>
+      <h2 class="st" data-r style="--i:1">“오늘 맑음 24°” 한 줄 = 외부 API 6개</h2>
+      <div class="hr" data-r style="--i:2"></div>
+      <div class="diagram" data-r style="--i:2">
+        <svg viewBox="0 0 1080 300">
+          <defs><marker id="g1" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" refX="13" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14z" fill="#AEB5BC"/></marker></defs>
+
+          <text x="16" y="20" font-size="12.5" font-weight="800" fill="#767E86" class="m">소스 — 커버 범위·갱신 주기가 전부 다르다</text>
+          <g font-size="13.5" font-weight="700" text-anchor="middle" class="m">
+            <rect x="16" y="32" width="264" height="34" rx="9" fill="#EFF3F8" stroke="#DAE6F2"/><text x="148" y="54" fill="#1E4E7E">단기예보 · 오늘~+3일</text>
+            <rect x="16" y="76" width="264" height="34" rx="9" fill="#EFF3F8" stroke="#DAE6F2"/><text x="148" y="98" fill="#1E4E7E">초단기실황 · 지금 관측</text>
+            <rect x="16" y="120" width="264" height="34" rx="9" fill="#EFF3F8" stroke="#DAE6F2"/><text x="148" y="142" fill="#1E4E7E">초단기예보 · +6시간</text>
+            <rect x="16" y="164" width="264" height="34" rx="9" fill="#EFF3F8" stroke="#DAE6F2"/><text x="148" y="186" fill="#1E4E7E">중기예보 · +4~+10일</text>
+            <rect x="16" y="208" width="264" height="34" rx="9" fill="#F7F2E8" stroke="#E8DCC4"/><text x="148" y="230" fill="#8A5A12">자외선 · 미세먼지</text>
+          </g>
+
+          <path d="M290,137 L354,137" stroke="#AEB5BC" stroke-width="2.5" fill="none" marker-end="url(#g1)"/>
+
+          <rect x="368" y="70" width="244" height="134" rx="14" fill="#EDF4F1" stroke="#15795A" stroke-width="1.2"/>
+          <text x="490" y="102" text-anchor="middle" font-size="16" font-weight="900" fill="#0B5540">합성 계층</text>
+          <g text-anchor="middle" font-size="13.5" font-weight="700" class="m">
+            <rect x="388" y="116" width="204" height="30" rx="8" fill="#fff"/><text x="490" y="136" fill="#0B5540">날짜로 소스 라우팅</text>
+            <rect x="388" y="154" width="204" height="30" rx="8" fill="#fff"/><text x="490" y="174" fill="#0B5540">최신 관측으로 덮어쓰기</text>
+          </g>
+
+          <path d="M622,137 L686,137" stroke="#AEB5BC" stroke-width="2.5" fill="none" marker-end="url(#g1)"/>
+
+          <rect x="700" y="60" width="200" height="154" rx="14" fill="#16191E"/>
+          <text x="722" y="90" font-size="13" font-weight="800" fill="#8FD8BA" class="m">하나의 응답</text>
+          <g font-size="13" fill="#E6E9EC" class="m">
+            <text x="722" y="118">상태 · 기온 · 최고/최저</text>
+            <text x="722" y="142">체감 · 강수확률 · 습도</text>
+            <text x="722" y="166">바람 · 자외선 · 미세먼지</text>
+            <text x="722" y="196" fill="#8FD8BA">+ 시간별 예보</text>
+          </g>
+
+          <g transform="translate(920,60)">
+            <rect width="144" height="154" rx="14" fill="#5FA8E4"/>
+            <circle cx="108" cy="40" r="24" fill="#FFE29A" opacity=".95"/>
+            <text x="18" y="34" font-size="11" font-weight="700" fill="#EAF3F8" class="m">서울 · 지금</text>
+            <text x="18" y="88" font-size="38" font-weight="900" fill="#fff">24°</text>
+            <text x="18" y="114" font-size="13" font-weight="700" fill="#EAF3F8">맑음 · 26° / 18°</text>
+            <text x="18" y="138" font-size="11.5" font-weight="700" fill="#D8EAF6" class="m">체감 25° · UV 보통</text>
+          </g>
+
+          <g>
+            <rect x="16" y="258" width="336" height="36" rx="10" fill="#F5F7F8" stroke="#E3E7EA"/>
+            <text x="36" y="282" font-size="13.5" font-weight="800" fill="#14171A">🌧️ 실황이 비를 관측하면 예보를 이긴다</text>
+
+            <rect x="372" y="258" width="336" height="36" rx="10" fill="#F5F7F8" stroke="#E3E7EA"/>
+            <text x="392" y="282" font-size="13.5" font-weight="800" fill="#14171A">📍 시·도 평균이 아니라 가장 가까운 측정소</text>
+
+            <rect x="728" y="258" width="336" height="36" rx="10" fill="#F5F7F8" stroke="#E3E7EA"/>
+            <text x="748" y="282" font-size="13.5" font-weight="800" fill="#14171A">⚡ 좌표를 100m 단위로 묶어 캐시 공유</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- 16. 기술적 챌린지 -->
+  <section class="slide" id="challenge">
+    <div class="wrap">
+      <div class="secmark" data-r><span class="bn">08</span></div>
+      <div class="ey" data-r style="--i:1">Technical Challenges</div>
+      <h2 class="st" data-r style="--i:1">고른 것과 버린 것</h2>
+      <p class="lead" data-r style="--i:2">네 번의 갈림길에서 <b>무엇을 포기했는지</b> 적었다.</p>
+      <div class="hr" data-r style="--i:2"></div>
+      <div class="grid2">
+        <div class="chcard" data-r style="--i:2">
+          <span class="tg">추천</span>
+          <div class="tt">LLM이 없는 가게를 지어낸다</div>
+          <div class="opts"><span class="opt">프롬프트 강화</span><span class="opt">장소 DB 구축</span><span class="opt pick">✓ 책임 분리</span></div>
+          <div class="why">프롬프트는 손볼 때마다 다시 새어 나왔고, 장소 DB를 쌓는 일은 4주에 무리였다. <b>LLM에게 장소를 묻지 않으면 지어낼 수 없다.</b></div>
+        </div>
+        <div class="chcard" data-r style="--i:3">
+          <span class="tg">약속</span>
+          <div class="tt">최적 시간을 매번 계산하면 느리지 않을까</div>
+          <div class="opts"><span class="opt">집계 컬럼 저장</span><span class="opt">Redis 캐시</span><span class="opt pick">✓ 그때그때 집계</span></div>
+          <div class="why">참여자가 많아야 수십 명이라 집계가 훨씬 싸다. 저장해두면 <b>누가 응답을 바꿀 때마다 맞춰줘야 하고, 거기서 버그가 난다.</b></div>
+        </div>
+        <div class="chcard" data-r style="--i:4">
+          <span class="tg">외부 API</span>
+          <div class="tt">호출량이 사용자 수를 따라 늘어난다</div>
+          <div class="opts"><span class="opt">사용자별 호출 제한</span><span class="opt">전면 캐시</span><span class="opt pick">✓ 좌표 반올림 + 의도 기반 호출</span></div>
+          <div class="why">좌표를 100m로 묶으면 옆 사람과 캐시를 공유한다. 지도를 움직일 때가 아니라 검색어를 바꿀 때만 부르니, <b>호출 수가 사용자 수가 아니라 의도 수를 따라간다.</b></div>
+        </div>
+        <div class="chcard" data-r style="--i:5">
+          <span class="tg">개인화</span>
+          <div class="tt">데이터가 없는 첫 사용자에게 뭘 보여줄까</div>
+          <div class="opts"><span class="opt">인기순 고정</span><span class="opt">협업 필터링</span><span class="opt pick">✓ 3단 폴백</span></div>
+          <div class="why">사용자가 적어 협업 필터링은 애초에 쓸 수 없었다. 지금 맥락 → 전체 상위 → 설문값 순으로 물러나며 <b>어느 단계에서도 화면이 비지 않는다.</b></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 16. 인증 -->
+  <section class="slide" id="auth-sec">
+    <div class="wrap">
+      <div class="secmark" data-r><span class="bn">09</span></div>
+      <div class="ey" data-r style="--i:1">Auth &amp; Security</div>
+      <h2 class="st" data-r style="--i:1">인증 — 토큰은 쿠키에만 둔다</h2>
+      <div class="hr" data-r style="--i:2"></div>
+      <div class="diagram" data-r style="--i:2;margin-bottom:20px">
+        <svg viewBox="0 0 1080 116">
+          <defs><marker id="h1" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" refX="13" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14z" fill="#AEB5BC"/></marker></defs>
+          <text x="16" y="20" font-size="12.5" font-weight="800" fill="#767E86" class="m">로그인 흐름</text>
+          <g text-anchor="middle">
+            <rect x="16" y="32" width="214" height="66" rx="12" fill="#F7F2E8" stroke="#B4791F" stroke-width="1.2"/>
+            <text x="123" y="62" font-size="14.5" font-weight="850" fill="#8A5A12">🔑 소셜 인가</text>
+            <text x="123" y="84" font-size="12.5" fill="#767E86" class="m">카카오 · 구글 · 네이버</text>
+
+            <rect x="294" y="32" width="214" height="66" rx="12" fill="#EFF3F8" stroke="#2E6BA8" stroke-width="1.2"/>
+            <text x="401" y="62" font-size="14.5" font-weight="850" fill="#1E4E7E">백엔드 콜백</text>
+            <text x="401" y="84" font-size="12.5" fill="#767E86" class="m">회원 조회 · 신규 판정</text>
+
+            <rect x="572" y="32" width="214" height="66" rx="12" fill="#16191E"/>
+            <text x="679" y="62" font-size="14.5" font-weight="850" fill="#8FD8BA">🍪 쿠키로만 발급</text>
+            <text x="679" y="84" font-size="12.5" fill="#9db6ab" class="m">JS가 읽을 수 없음</text>
+
+            <rect x="850" y="32" width="214" height="66" rx="12" fill="#EDF4F1" stroke="#15795A" stroke-width="1.2"/>
+            <text x="957" y="62" font-size="14.5" font-weight="850" fill="#0B5540">앱 진입</text>
+            <text x="957" y="84" font-size="12.5" fill="#767E86" class="m">만료 시 자동 재발급</text>
+          </g>
+          <g stroke="#AEB5BC" stroke-width="2.5" fill="none" marker-end="url(#h1)">
+            <path d="M240,65 L284,65"/><path d="M518,65 L562,65"/><path d="M796,65 L840,65"/>
+          </g>
+        </svg>
+      </div>
+      <div class="diagram" data-r style="--i:3">
+        <svg viewBox="0 0 1080 112">
+          <defs><marker id="h2" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" refX="13" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14z" fill="#AEB5BC"/></marker></defs>
+          <text x="16" y="20" font-size="12.5" font-weight="800" fill="#767E86" class="m">토큰 회전 — 옛 토큰은 재사용되지 않는다</text>
+          <g text-anchor="middle" font-size="13.5" font-weight="800" class="m">
+            <rect x="16" y="32" width="214" height="38" rx="10" fill="#EDF4F1" stroke="#15795A"/><text x="123" y="56" fill="#0B5540">갱신 토큰 제시</text>
+            <rect x="294" y="32" width="214" height="38" rx="10" fill="#EFF3F8" stroke="#2E6BA8"/><text x="401" y="56" fill="#1E4E7E">저장된 값과 대조</text>
+            <rect x="572" y="32" width="214" height="38" rx="10" fill="#EDF4F1" stroke="#15795A"/><text x="679" y="56" fill="#0B5540">새 토큰으로 교체</text>
+            <rect x="850" y="32" width="214" height="38" rx="10" fill="#F8EFEC" stroke="#B23B32"/><text x="957" y="56" fill="#B23B32">옛 토큰 즉시 거부</text>
+          </g>
+          <g stroke="#AEB5BC" stroke-width="2.5" fill="none" marker-end="url(#h2)">
+            <path d="M240,51 L284,51"/><path d="M518,51 L562,51"/><path d="M796,51 L840,51"/>
+          </g>
+          <text x="540" y="98" text-anchor="middle" font-size="13" font-weight="700" fill="#767E86" class="m">권한은 토큰에 넣지 않고 매번 다시 조회 — 권한 변경이 즉시 반영된다</text>
+        </svg>
+      </div>
+      <div class="grid4" data-r style="--i:4;margin-top:18px">
+        <div class="card"><div class="ch">🍪 쿠키 전용</div><div class="cd">자바스크립트가 값을 읽을 수 없다. <b>XSS가 나도 토큰은 안 빠져나간다.</b></div></div>
+        <div class="card"><div class="ch">🛡️ CSRF 방어</div><div class="cd">쿠키로 받은 값을 <b>헤더에 다시 실어</b> 보내야 통과된다.</div></div>
+        <div class="card"><div class="ch">🧵 재발급은 한 번만</div><div class="cd">여러 요청이 동시에 만료돼도 <b>호출은 한 번뿐이다.</b></div></div>
+        <div class="card"><div class="ch">🧹 계정 격리</div><div class="cd">계정이 바뀌면 <b>이전 로컬 데이터를 비운다.</b></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 17. 구현 결과 -->
+  <section class="slide" id="impl1">
+    <div class="wrap">
+      <div class="secmark" data-r><span class="bn">10</span></div>
+      <div class="ey" data-r style="--i:1">Result</div>
+      <h2 class="st" data-r style="--i:1">구현 결과</h2>
+      <div class="hr" data-r style="--i:2"></div>
+      <div class="diagram" data-r style="--i:2;margin-bottom:18px">
+        <svg viewBox="0 0 1080 300">
+          <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3486B8"/><stop offset="1" stop-color="#84BCDA"/></linearGradient></defs>
+          <rect x="30" y="12" width="1020" height="276" rx="16" fill="#FFFFFF" stroke="#E3E7EA"/>
+          <path d="M30,28 a16,16 0 0 1 16,-16 h988 a16,16 0 0 1 16,16 v22 h-1020 z" fill="#F7F8F9"/>
+          <circle cx="56" cy="31" r="5" fill="#E4C6C1"/><circle cx="74" cy="31" r="5" fill="#ECD9B6"/><circle cx="92" cy="31" r="5" fill="#D2E6DB"/>
+
+          <rect x="48" y="66" width="118" height="206" rx="12" fill="#F7F9FA" stroke="#EDF0F2"/>
+          <rect x="62" y="82" width="90" height="30" rx="9" fill="#16191E"/><text x="107" y="102" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">＋ 추가</text>
+          <rect x="62" y="130" width="90" height="24" rx="8" fill="#15795A"/>
+          <rect x="62" y="164" width="90" height="20" rx="7" fill="#EDF0F2"/><rect x="62" y="194" width="90" height="20" rx="7" fill="#EDF0F2"/><rect x="62" y="224" width="90" height="20" rx="7" fill="#EDF0F2"/>
+
+          <rect x="184" y="66" width="318" height="146" rx="14" fill="url(#sky)"/>
+          <circle cx="452" cy="106" r="26" fill="#FFE29A" opacity=".95"/>
+          <text x="206" y="98" font-size="12" font-weight="700" fill="#EAF3F8" class="m">SEOUL · NOW</text>
+          <text x="204" y="156" font-size="44" font-weight="900" fill="#fff">24°</text>
+          <text x="206" y="188" font-size="15" font-weight="700" fill="#EAF3F8">맑음 · 26° / 18°</text>
+
+          <rect x="184" y="226" width="318" height="46" rx="12" fill="#F7F9FA" stroke="#EDF0F2"/>
+          <g fill="#E4EDE8"><rect x="198" y="240" width="34" height="20" rx="6"/><rect x="240" y="240" width="34" height="20" rx="6" fill="#15795A"/><rect x="282" y="240" width="34" height="20" rx="6"/><rect x="324" y="240" width="34" height="20" rx="6"/><rect x="366" y="240" width="34" height="20" rx="6"/><rect x="408" y="240" width="34" height="20" rx="6"/><rect x="450" y="240" width="34" height="20" rx="6"/></g>
+
+          <rect x="520" y="66" width="256" height="206" rx="14" fill="#FFFFFF" stroke="#EDF0F2"/>
+          <text x="540" y="96" font-size="15" font-weight="800" fill="#14171A">오늘 할 일</text><text x="756" y="96" text-anchor="end" font-size="13" font-weight="700" fill="#15795A">3/5</text>
+          <rect x="540" y="110" width="216" height="7" rx="4" fill="#EDF0F2"/><rect x="540" y="110" width="130" height="7" rx="4" fill="#15795A"/>
+          <g><circle cx="550" cy="146" r="8" fill="#15795A"/><rect x="568" y="140" width="146" height="12" rx="4" fill="#EAEDF0"/></g>
+          <g><circle cx="550" cy="180" r="8" fill="#15795A"/><rect x="568" y="174" width="174" height="12" rx="4" fill="#EAEDF0"/></g>
+          <g><circle cx="550" cy="214" r="8" fill="none" stroke="#C4CAD0" stroke-width="2"/><rect x="568" y="208" width="118" height="12" rx="4" fill="#EAEDF0"/></g>
+          <g><circle cx="550" cy="248" r="8" fill="none" stroke="#C4CAD0" stroke-width="2"/><rect x="568" y="242" width="154" height="12" rx="4" fill="#EAEDF0"/></g>
+
+          <rect x="794" y="66" width="238" height="96" rx="14" fill="#16191E"/>
+          <text x="816" y="100" font-size="13.5" font-weight="800" fill="#8FD8BA" class="m">AI 추천</text>
+          <text x="816" y="128" font-size="14.5" font-weight="700" fill="#EDF3EF">비 소식엔 실내 활동을</text>
+          <text x="816" y="150" font-size="12.5" font-weight="700" fill="#9db6ab">대화 열기 →</text>
+
+          <rect x="794" y="176" width="238" height="96" rx="14" fill="#F3F0F7" stroke="#E6DEF0"/>
+          <text x="816" y="208" font-size="12.5" font-weight="800" fill="#6B4C8A" class="m">산책·자연 · 도보 15분</text>
+          <text x="816" y="238" font-size="15.5" font-weight="800" fill="#14171A">한강 야외 피크닉</text>
+          <text x="816" y="260" font-size="12.5" font-weight="600" fill="#767E86">공원 · 1.2km · 실재 장소</text>
+        </svg>
+      </div>
+      <div class="grid6">
+        <div class="card" data-r style="--i:3"><div class="ch">🌤️ 홈</div><div class="cd">날씨별 <b>16종 배경</b></div></div>
+        <div class="card" data-r style="--i:4"><div class="ch">🤖 AI 추천</div><div class="cd"><b>2단계 좁히기</b></div></div>
+        <div class="card" data-r style="--i:5"><div class="ch">🗺️ 지도</div><div class="cd">핀 2종 · <b>클러스터링</b></div></div>
+        <div class="card" data-r style="--i:6"><div class="ch">🗓️ 약속</div><div class="cd">슬롯 <b>히트맵</b></div></div>
+        <div class="card" data-r style="--i:7"><div class="ch">✅ 할 일·루틴</div><div class="cd"><b>자정 자동 등록</b></div></div>
+        <div class="card" data-r style="--i:8"><div class="ch">🔔 알림·친구</div><div class="cd">공유 권한 <b>3단계</b></div></div>
+      </div>
+      <div class="mrow" data-r style="--i:9;margin-top:16px">
+        <div class="m"><div class="mv">17,700+</div><div class="ml">코드 라인</div></div>
+        <div class="m"><div class="mv">53</div><div class="ml">API 엔드포인트</div></div>
+        <div class="m"><div class="mv">16</div><div class="ml">테이블</div></div>
+        <div class="m"><div class="mv">8</div><div class="ml">외부 API</div></div>
+        <div class="m"><div class="mv">17</div><div class="ml">화면 · 겹침 창</div></div>
+        <div class="m"><div class="mv">5 / 5</div><div class="ml">기능군 완료</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 18. 시연 -->
+  <section class="slide" id="impl2">
+    <div class="wrap">
+      <div class="ey" data-r>Demo</div>
+      <h2 class="st" data-r style="--i:1">시연</h2>
+      <div class="hr" data-r style="--i:2"></div>
+      <div class="two">
+        <div class="video" data-r style="--i:2">
+          <div class="play"><svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></div>
+          <div style="font-weight:700;font-size:20px">데모 영상 삽입</div>
+        </div>
+        <div class="diagram" data-r style="--i:3">
+          <svg viewBox="0 0 480 300">
+            <text x="14" y="22" font-size="12.5" font-weight="800" fill="#767E86" class="m">시연 시나리오 · 약 3분</text>
+            <line x1="36" y1="44" x2="36" y2="278" stroke="#E3E7EA" stroke-width="2"/>
+            <g font-size="14" font-weight="700">
+              <circle cx="36" cy="56" r="8" fill="#B4791F"/><text x="62" y="62" fill="#4B535B">로그인 → 닉네임 → 취향 설문</text>
+              <circle cx="36" cy="100" r="8" fill="#B4791F"/><text x="62" y="106" fill="#4B535B">홈 진입 — 실시간 날씨 배경</text>
+              <circle cx="36" cy="144" r="8" fill="#6B4C8A"/><text x="62" y="150" fill="#4B535B">AI 챗 → 카테고리 선택</text>
+              <circle cx="36" cy="188" r="8" fill="#2E6BA8"/><text x="62" y="194" fill="#4B535B">장소 카드 → 지도 → 할 일 추가</text>
+              <circle cx="36" cy="232" r="8" fill="#2E6BA8"/><text x="62" y="238" fill="#4B535B">약속 생성 → 초대 링크 → 참여</text>
+              <circle cx="36" cy="276" r="9" fill="#15795A"/><text x="62" y="282" font-weight="900" fill="#0B5540">확정 → 전원 할 일 자동 생성</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+      <div class="card" data-r style="--i:4;margin-top:18px;border-left:3px solid var(--green)">
+        <div class="cd" style="font-size:16.5px;margin-top:0">👀 <b>볼 곳</b> — 각 단계가 다른 앱으로 이동하지 않고 이어진다는 점.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 19. 트러블슈팅 -->
+  <section class="slide" id="trouble">
+    <div class="wrap">
+      <div class="secmark" data-r><span class="bn">11</span></div>
+      <div class="ey" data-r style="--i:1">Troubleshooting</div>
+      <h2 class="st" data-r style="--i:1">원인을 찾는 데 가장 오래 걸린 4가지</h2>
+      <p class="lead" data-r style="--i:2">넷 다 <b>프레임워크가 알아서 해주리라 믿었던 자리</b>에서 났다.</p>
+      <div class="hr" data-r style="--i:2"></div>
+      <div class="grid2">
+        <div class="tcard" data-r style="--i:2">
+          <span class="tg">트랜잭션 · 루틴</span>
+          <div class="tt">한 건이 실패하자 한 달치가 통째로 취소됐다</div>
+          <dl>
+            <dt>증상</dt><dd>요일 루틴을 한 달치 등록하면, 이미 있는 날짜 <b>1건</b> 때문에 전체가 저장되지 않았다.</dd>
+            <dt>원인</dt><dd>중복 저장 실패가 영속성 컨텍스트를 롤백 대상으로 표시해, 예외를 잡아도 커밋 단계에서 다시 터졌다.</dd>
+            <dt>해결</dt><dd class="fix">저장만 <b>REQUIRES_NEW</b>로 떼어내고 그 안에서는 예외를 잡지 않았다. 겹치는 날짜만 건너뛰고 나머지는 들어간다.</dd>
+          </dl>
+        </div>
+        <div class="tcard" data-r style="--i:3">
+          <span class="tg">커넥션 · 추천</span>
+          <div class="tt">추천을 쓰는 동안 무관한 API까지 느려졌다</div>
+          <dl>
+            <dt>증상</dt><dd>AI 추천 요청이 몰리면 할 일 조회·저장 같은 무관한 요청까지 응답이 밀렸다.</dd>
+            <dt>원인</dt><dd>추천 로직 전체가 하나의 트랜잭션이라, 모델 응답을 기다리는 <b>최대 20초</b> 내내 커넥션 풀을 붙잡고 있었다.</dd>
+            <dt>해결</dt><dd class="fix">DB 조회를 먼저 끝내 <b>커넥션을 반납하고 나서</b> 외부 호출로 넘어간다. 점유 시간이 20초에서 수십 ms로 줄었다.</dd>
+          </dl>
+        </div>
+        <div class="tcard" data-r style="--i:4">
+          <span class="tg">스케줄러 · 타임존</span>
+          <div class="tt">자정에 도는 배치가 어제 날짜로 만들었다</div>
+          <dl>
+            <dt>증상</dt><dd>매일 00시에 루틴을 자동 등록하는데, <b>전날 날짜</b>로 생기는 경우가 있었다.</dd>
+            <dt>원인</dt><dd>cron은 <b>Asia/Seoul</b>로 걸어뒀지만 주입한 시계는 JVM 기본 시간대였다. 컨테이너가 UTC면 자정 직후 날짜가 하루 어긋난다.</dd>
+            <dt>해결</dt><dd class="fix">시각은 그대로 두고 <b>시간대만 Seoul로 고정</b>해 날짜를 뽑는다.</dd>
+          </dl>
+        </div>
+        <div class="tcard" data-r style="--i:5">
+          <span class="tg">동시성 · 개인화</span>
+          <div class="tt">취향 가중치가 조용히 사라졌다</div>
+          <dl>
+            <dt>증상</dt><dd>카테고리를 빠르게 연달아 고르면 간헐적으로 <b>500</b>이 났고, 어떤 선택은 점수에 반영되지 않았다.</dd>
+            <dt>원인</dt><dd>읽고-고쳐-쓰는 방식이라, 동시에 처음 삽입하면 기본키가 충돌하고 <b>나중 쓰기가 먼저 쓴 값을 덮었다.</b></dd>
+            <dt>해결</dt><dd class="fix"><b>ON DUPLICATE KEY UPDATE</b>로 한 번에 누적한다. UUID는 빅엔디안 binary(16)로 넘겨 JPA 저장 순서와 맞췄다.</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 20. 회고 -->
+  <section class="slide" id="retro">
+    <div class="wrap">
+      <div class="secmark" data-r><span class="bn">12</span></div>
+      <div class="ey" data-r style="--i:1">Retrospective</div>
+      <h2 class="st" data-r style="--i:1">회고</h2>
+      <div class="hr" data-r style="--i:2"></div>
+      <div class="grid3">
+        <div class="rcol" data-r style="--i:2">
+          <h4><span class="bar" style="background:var(--green)"></span>잘한 것</h4>
+          <ul>
+            <li>도메인 단위로 나눠 <b>4명이 4주간 거의 충돌 없이</b> 병렬 개발했다</li>
+            <li>환각을 프롬프트 대신 <b>구조</b>로 막아서, 프롬프트를 손대지 않아도 품질이 유지됐다</li>
+            <li>외부 API 하나가 죽어도 화면은 살아 있게, <b>실패할 때 뭘 보여줄지</b> 먼저 정해뒀다</li>
+            <li>중복과 정합성은 <b>DB 제약</b>에 맡겼다. 코드로 막으면 빠뜨리는 곳이 생긴다</li>
+          </ul>
+        </div>
+        <div class="rcol" data-r style="--i:3">
+          <h4><span class="bar" style="background:var(--gold)"></span>아쉬운 것</h4>
+          <ul>
+            <li>약속을 임시 구조로 먼저 만들어 중간에 <b>데이터 모델을 전면 재설계</b>했다</li>
+            <li>레포 3개의 계약을 문서로만 맞춰, 카테고리 개수 같은 <b>불일치를 뒤늦게</b> 발견했다</li>
+            <li>테스트가 날씨·약속에 몰려 있고 <b>나머지 도메인은 얇다</b></li>
+            <li>쿠키 <b>secure</b> 등 배포용 보안 설정이 개발값으로 남아 있다</li>
+          </ul>
+        </div>
+        <div class="rcol" data-r style="--i:4">
+          <h4><span class="bar" style="background:var(--blue)"></span>다음에 할 것</h4>
+          <ul>
+            <li>가중치에 <b>날씨 축</b>을 실제로 반영해 맥락을 더 잘게 나눈다</li>
+            <li>추천 수락률을 <b>계측</b>해 신호 값을 데이터로 조정한다</li>
+            <li>알림을 폴링에서 <b>실시간</b>으로, 이후 푸시까지 확장한다</li>
+            <li>HTTPS · 시크릿 관리 · <b>CI 게이트</b>로 배포 파이프라인을 마무리한다</li>
+          </ul>
+        </div>
+      </div>
+      <div class="grid2" data-r style="--i:5;margin-top:20px">
+        <div class="card" style="border-left:3px solid var(--green)">
+          <div class="ch">검증할 수 없는 일은 모델에게 맡기지 않는다</div>
+          <div class="cd">실재하는 장소, 시각 계산, 권한 판단을 LLM에서 걷어내자 <b>프롬프트를 고치지 않아도 품질이 안정됐다.</b> 프롬프트를 다듬는 시간보다 맡기지 않을 일을 정하는 시간이 더 값졌다.</div>
+        </div>
+        <div class="card" style="border-left:3px solid var(--gold)">
+          <div class="ch">편한 기본값일수록 무엇을 가정하는지 봐야 한다</div>
+          <div class="cd">트랜잭션 경계, 커넥션 반납 시점, 기본 시간대, 동시 쓰기. <b>네 건이 모두 프레임워크가 대신 해주던 자리</b>에서 나왔다. 편한 기본값일수록 무엇을 가정하는지 봐야 했다.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 21. Q&A -->
+  <section class="slide" id="qa">
+    <div class="wrap" style="text-align:center">
+      <svg class="logo-qa" data-r style="--i:0" viewBox="0 0 48 48" aria-label="해야지 로고"><use href="#logo"/></svg>
+      <div class="ey" data-r style="--i:1;color:var(--mint)">Thank you</div>
+      <h2 class="st" data-r style="--i:2;font-size:clamp(48px,8vw,92px)">Q &amp; A</h2>
+      <p class="lead" data-r style="--i:3;margin:18px auto 0;text-align:center;max-width:58ch">해야지 — 날씨·위치·취향 기반 활동 추천 &amp; 약속 조율 투두 앱<br><span style="color:var(--faint);font-size:16px">허건 · 이호성 · 김현우 · 유희준</span></p>
+      <div class="chips" data-r style="--i:4;justify-content:center;margin-top:24px">
+        <span class="chip">React · Spring Boot · FastAPI</span><span class="chip">MySQL · Redis · Ollama</span><span class="chip">Docker Compose</span>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="foot"><div class="fb"><svg class="lm" viewBox="0 0 48 48" aria-hidden="true"><use href="#logo"/></svg>해야지 · 설계·구현 발표</div><div></div></div>
+<div class="count" id="count"><b>01</b> / 01</div>
+<div class="nav">
+  <button id="prev" aria-label="이전">‹</button>
+  <button id="next" aria-label="다음">›</button>
+</div>
+
+<script>
+(function(){
+  var slides=[].slice.call(document.querySelectorAll('.slide'));
+  var i=0, n=slides.length;
+  var prog=document.getElementById('prog'), count=document.getElementById('count');
+  function pad(x){return (x<9?'0':'')+(x+1)}
+  function show(k){
+    k=Math.max(0,Math.min(n-1,k));
+    slides.forEach(function(s,idx){
+      s.classList.remove('active','prev');
+      if(idx===k) s.classList.add('active');
+      else if(idx<k) s.classList.add('prev');
+    });
+    i=k;
+    prog.style.width=((k)/(n-1)*100)+'%';
+    count.innerHTML='<b>'+pad(k)+'</b> / '+n;
+    if(history.replaceState) history.replaceState(null,'',location.pathname+'#'+(slides[k].id||k));
+    slides[k].scrollTop=0;
+  }
+  // 표지·Q&A를 뺀 모든 장 우상단에 브랜드 마크
+  slides.forEach(function(s){
+    if(s.id==='cover'||s.id==='qa') return;
+    var d=document.createElementNS('http://www.w3.org/2000/svg','svg');
+    d.setAttribute('class','slidemark'); d.setAttribute('viewBox','0 0 48 48');
+    d.setAttribute('aria-hidden','true');
+    var u=document.createElementNS('http://www.w3.org/2000/svg','use');
+    u.setAttribute('href','#logo'); d.appendChild(u); s.appendChild(d);
+  });
+  function next(){show(i+1)} function prev(){show(i-1)}
+  document.getElementById('next').onclick=next;
+  document.getElementById('prev').onclick=prev;
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){e.preventDefault();next()}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();prev()}
+    else if(e.key==='Home'){show(0)} else if(e.key==='End'){show(n-1)}
+  });
+  document.querySelectorAll('[data-go]').forEach(function(a){
+    a.addEventListener('click',function(e){e.preventDefault();
+      var id=a.getAttribute('data-go');var idx=slides.findIndex(function(s){return s.id===id});
+      if(idx>=0) show(idx);
+    });
+  });
+  var x0=null;
+  document.addEventListener('touchstart',function(e){x0=e.touches[0].clientX},{passive:true});
+  document.addEventListener('touchend',function(e){
+    if(x0===null)return;var dx=e.changedTouches[0].clientX-x0;
+    if(Math.abs(dx)>60){dx<0?next():prev()} x0=null;
+  },{passive:true});
+  var h=location.hash.slice(1);
+  var start=slides.findIndex(function(s){return s.id===h});
+  show(start>=0?start:0);
+})();
+</script>
+</body>
+</html>
