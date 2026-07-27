@@ -120,6 +120,10 @@ h2.st{font-size:clamp(30px,3.6vw,41px);font-weight:850;letter-spacing:-.03em;mar
 .secmark .bn{font-family:var(--mono);font-size:38px;font-weight:900;color:var(--greenL);-webkit-text-stroke:1.5px var(--green);line-height:1}
 
 .video{position:relative;background:linear-gradient(135deg,#12352a,#0d211b);border-radius:16px;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#cfe3d9;border:1px solid var(--line)}
+.video{text-decoration:none;cursor:pointer;transition:transform .18s ease,box-shadow .18s ease}
+.video:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(13,33,27,.28)}
+.video:hover .play{background:rgba(255,255,255,.26)}
+.video .vcap{font-family:var(--mono);font-size:12.5px;color:#8fbfa9;margin-top:8px}
 .video .play{width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;margin-bottom:12px}
 
 .chips{display:flex;flex-wrap:wrap;gap:10px}
@@ -1268,6 +1272,48 @@ svg .m{font-family:var(--mono)}
     </div>
   </section>
 
+  <!-- 15.5 알림 · 메일 -->
+  <section class="slide" id="notify">
+    <div class="wrap">
+      <div class="ey" data-r>Engine 5 · 알림</div>
+      <h2 class="st" data-r style="--i:1">알림 — 상황 11가지 · 메일은 그중 5가지</h2>
+      <p class="lead" data-r style="--i:2">전부 메일로 보내지 않는다. <b>앱을 안 보고 있어도 놓치면 안 되는 것</b>만 메일까지 간다.</p>
+      <div class="hr" data-r style="--i:2"></div>
+      <div class="diagram" data-r style="--i:2">
+        <svg viewBox="0 0 1080 330">
+          <g>
+            <text x="16" y="26" font-size="12.5" font-weight="800" fill="#1E4E7E" class="m">약속 · 4가지</text>
+            <rect x="16" y="38" width="344" height="222" rx="13" fill="#EFF3F8" stroke="#2E6BA8" stroke-width="1.2"/>
+            <rect x="28" y="50" width="320" height="34" rx="9" fill="#fff" stroke="#E3E7EA"/><text x="42" y="72" font-size="13" font-weight="700" fill="#4B535B" text-anchor="start">초대를 받았을 때</text><text x="334" y="72" font-size="13" font-weight="800" fill="#15795A" text-anchor="end">✉</text>
+            <rect x="28" y="92" width="320" height="34" rx="9" fill="#fff" stroke="#E3E7EA"/><text x="42" y="114" font-size="13" font-weight="700" fill="#4B535B" text-anchor="start">상대가 수락 · 거절했을 때</text>
+            <rect x="28" y="134" width="320" height="34" rx="9" fill="#fff" stroke="#E3E7EA"/><text x="42" y="156" font-size="13" font-weight="700" fill="#4B535B" text-anchor="start">시간이 확정됐을 때</text><text x="334" y="156" font-size="13" font-weight="800" fill="#15795A" text-anchor="end">✉</text>
+            <rect x="28" y="176" width="320" height="34" rx="9" fill="#fff" stroke="#E3E7EA"/><text x="42" y="198" font-size="13" font-weight="700" fill="#4B535B" text-anchor="start">시작 10분 전</text>
+            <text x="372" y="26" font-size="12.5" font-weight="800" fill="#8A5A12" class="m">할 일 · 공유 · 5가지</text>
+            <rect x="372" y="38" width="344" height="222" rx="13" fill="#F7F2E8" stroke="#B4791F" stroke-width="1.2"/>
+            <rect x="384" y="50" width="320" height="34" rx="9" fill="#fff" stroke="#E3E7EA"/><text x="398" y="72" font-size="13" font-weight="700" fill="#4B535B" text-anchor="start">할 일에 초대를 받았을 때</text><text x="690" y="72" font-size="13" font-weight="800" fill="#15795A" text-anchor="end">✉</text>
+            <rect x="384" y="92" width="320" height="34" rx="9" fill="#fff" stroke="#E3E7EA"/><text x="398" y="114" font-size="13" font-weight="700" fill="#4B535B" text-anchor="start">상대가 수락 · 거절했을 때</text>
+            <rect x="384" y="134" width="320" height="34" rx="9" fill="#fff" stroke="#E3E7EA"/><text x="398" y="156" font-size="13" font-weight="700" fill="#4B535B" text-anchor="start">공유 할 일이 수정됐을 때</text>
+            <rect x="384" y="176" width="320" height="34" rx="9" fill="#fff" stroke="#E3E7EA"/><text x="398" y="198" font-size="13" font-weight="700" fill="#4B535B" text-anchor="start">시작 10분 전</text><text x="690" y="198" font-size="13" font-weight="800" fill="#15795A" text-anchor="end">✉</text>
+            <rect x="384" y="218" width="320" height="34" rx="9" fill="#fff" stroke="#E3E7EA"/><text x="398" y="240" font-size="13" font-weight="700" fill="#4B535B" text-anchor="start">야외 할 일에 비 · 눈 예보</text><text x="690" y="240" font-size="13" font-weight="800" fill="#15795A" text-anchor="end">✉</text>
+            <text x="728" y="26" font-size="12.5" font-weight="800" fill="#553C72" class="m">친구 · 2가지</text>
+            <rect x="728" y="38" width="336" height="222" rx="13" fill="#F3F0F7" stroke="#6B4C8A" stroke-width="1.2"/>
+            <rect x="740" y="50" width="312" height="34" rx="9" fill="#fff" stroke="#E3E7EA"/><text x="754" y="72" font-size="13" font-weight="700" fill="#4B535B" text-anchor="start">친구 요청을 받았을 때</text>
+            <rect x="740" y="92" width="312" height="34" rx="9" fill="#fff" stroke="#E3E7EA"/><text x="754" y="114" font-size="13" font-weight="700" fill="#4B535B" text-anchor="start">상대가 수락 · 거절했을 때</text>
+            </g>
+          <rect x="16" y="276" width="1048" height="44" rx="11" fill="#16191E"/>
+          <text x="36" y="294" font-size="12" font-weight="800" fill="#8FD8BA" class="m">이벤트 7가지는 트랜잭션이 커밋된 뒤에만 나간다 — 저장이 실패하면 알림도 없다</text>
+          <text x="36" y="312" font-size="11.5" font-weight="700" fill="#9db6ab" class="m">리마인더 0 */5 * * * * · 날씨 경보 0 0 7 * * * — 둘 다 zone = Asia/Seoul</text>
+          <text x="1048" y="304" font-size="12" font-weight="800" fill="#8FD8BA" text-anchor="end" class="m">✉ = 메일도 발송</text>
+        </svg>
+      </div>
+      <div class="grid3" data-r style="--i:3;margin-top:18px">
+        <div class="card"><div class="ch">📡 폴링하지 않는다</div><div class="cd">저장된 알림을 <b>Redis로 publish</b>하고 SSE로 밀어 넣는다. 화면이 주기적으로 물어보지 않는다.</div></div>
+        <div class="card"><div class="ch">🌧️ 날씨 경보는 조건이 좁다</div><div class="cd">매일 07시에 <b>야외 할 일</b>만 훑고, 예보가 <b>비 또는 눈</b>일 때만 보낸다. 흐림은 보내지 않는다.</div></div>
+        <div class="card"><div class="ch">🗑️ 약속이 지워지면 알림도 지운다</div><div class="cd">사라진 약속의 알림이 목록에 남으면 눌러도 갈 곳이 없다. <b>삭제 이벤트에서 같이 정리</b>한다.</div></div>
+      </div>
+    </div>
+  </section>
+
   <!-- 16. 기술적 챌린지 -->
   <section class="slide" id="challenge">
     <div class="wrap">
@@ -1436,10 +1482,11 @@ svg .m{font-family:var(--mono)}
       <h2 class="st" data-r style="--i:1">시연</h2>
       <div class="hr" data-r style="--i:2"></div>
       <div class="two">
-        <div class="video" data-r style="--i:2">
+        <a class="video" data-r style="--i:2" href="demo.mp4" target="_blank" rel="noopener" title="데모 영상 열기">
           <div class="play"><svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></div>
-          <div style="font-weight:700;font-size:20px">데모 영상 삽입</div>
-        </div>
+          <div style="font-weight:700;font-size:20px">데모 영상 재생</div>
+          <div class="vcap">demo.mp4 · 새 탭에서 열림</div>
+        </a>
         <div class="diagram" data-r style="--i:3">
           <svg viewBox="0 0 480 300">
             <text x="14" y="22" font-size="12.5" font-weight="800" fill="#767E86" class="m">시연 시나리오 · 약 3분</text>
